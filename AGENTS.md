@@ -100,7 +100,8 @@ Install them:
 | `TESTING.md` | bounded launch results per game: read it before claiming anything about a game |
 | `skills/`, `docs/ai-kit/` | the AI kit (shared with the sibling project, see `docs/ai-kit/README.md`) |
 | `tools/` | repo-level guards and setup (`setup.sh`, `check_no_game_content.py`) |
-| `tests/` | repo-level tests for the kit |
+| `tests/` | repo-level tests (kit, branding) |
+| `RELEASE.json`, `NOTICE.md`, `COPYING` | version / applicationId, credits, GPL text: keep them intact |
 
 Renderer hot spots (`nvn/maxwell/translate.c`, `nvn/vulkan/exec.c`, `nvn/cmdbuf.c`, the
 texture cache) change often. Comment on the tracking issue before a larger change there.
@@ -118,12 +119,25 @@ python3 tools/check_no_game_content.py .
 # Engine host checks (compile synthetic C tests; missing tools are "skipped", never "passed")
 (cd engine && python3 tools/run_host_checks.py && python3 tools/check_compatibility.py)
 
-# Android build: see engine/docs/BUILDING.md (fetch pinned sources, then
-# build_las_baseline.py / build_shared_android.py). CI builds the unsigned arm64 APK and the
-# corresponding source tarball in .github/workflows/build.yml.
+# Source manifests must stay current: run after touching any shell overlay file
+python3 tools/refresh_source_manifests.py          # --check to verify only
+
+# Android build (exactly what CI replays, from engine/; see engine/docs/BUILDING.md)
+cd engine
+python3 tools/fetch_sources.py && python3 tools/verify_sources.py
+python3 tools/build_las_baseline.py --deps --jobs 4
+python3 tools/build_las_baseline.py --apk --jobs 4
+python3 tools/build_letsgo_ffmpeg.py --build --jobs 4
+python3 tools/prepare_shared_ondevice.py --fetch --build --jobs 2
+python3 tools/build_shared_android.py --build --jobs 4
 ```
 
-The engine scripts expect to run from `engine/`; `engine/docs/BUILDING.md` is authoritative for the build.
+The engine scripts expect to run from `engine/`; `engine/docs/BUILDING.md` is authoritative. CI
+(`.github/workflows/build.yml`) builds on Ubuntu 24.04 with JDK 17, SDK platform `android-36`,
+build-tools `36.0.0`, CMake `3.31.6`, NDK r27c, and publishes `AC-NativeNX-<ver>-arm64-v8a.apk`,
+`AC-NativeNX-<ver>-source.tar.gz` and `SHA256SUMS` (current version in `RELEASE.json`, applicationId
+`com.accreation.nativenx`). `release.yml` only creates a **draft** release and refuses to run unless the
+repo variable `NATIVENX_RELEASE_APPROVED=true`; agents never publish a release.
 
 ## Rules for a good PR
 
