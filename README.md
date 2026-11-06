@@ -9,8 +9,12 @@ from [Eden](https://git.eden-emu.dev/eden-emu/eden) and the yuzu lineage. All
 upstream copyright lines, SPDX headers and license texts are kept; the project is
 GPL-3.0-or-later (see [NOTICE.md](NOTICE.md), [LICENSE](LICENSE), [COPYING](COPYING)).
 
-> Status: preview. AC-NativeNX builds have **not yet been tested on a real device
-> by AC-Création**. Nothing is published as a release until a device report exists.
+> Status: preview. First AC-Création real-device test (AC-NativeNX 0.1.0 on a
+> Galaxy Z Fold4, Snapdragon 8+ Gen 1 / Adreno 730, Android 16): the app installs
+> and starts, but **no game launches yet**. The native guest memory reservation
+> fails at startup (errno 17), see
+> [issue #6](https://github.com/AC-CREATION-AI/AC-NativeNX/issues/6). Nothing is
+> published as a release until a game starts on a real device.
 
 ## What this is
 
