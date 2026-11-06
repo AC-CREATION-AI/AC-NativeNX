@@ -58,6 +58,13 @@ body:
     validations:
       required: true
   - type: textarea
+    id: ceilings
+    attributes:
+      label: Ceilings and thermals
+      description: "Battery saver on or off, CPU max frequencies, GPU ceiling vs current clock, temperatures before and after. Read-only; do not change phone settings. Write 'not measured' if unknown."
+    validations:
+      required: true
+  - type: textarea
     id: results
     attributes:
       label: Results
