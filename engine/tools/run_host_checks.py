@@ -4,6 +4,10 @@
 These checks compile synthetic tests with the host compiler and need no Android
 NDK, device, game files, keys or network. Each check writes only below build/.
 Checks whose tools are missing are reported as skipped, never as passed.
+
+Many checks compile against the pinned upstream sources and the staged Android
+tree. On a fresh clone the runner stops with exit status 2 and the commands to
+run first, instead of reporting the missing files as compilation failures.
 """
 
 import argparse
@@ -90,6 +94,7 @@ CHECKS = [
     (["tests/test_button_font.py"], []),
     (["tests/shared_parallel_build_test.py"], []),
     (["tests/stage_shared_manual_test.py"], []),
+    (["tests/run_host_checks_precondition_test.py"], []),
 ]
 
 # These read the staged Android tree (work/shared-android), Vulkan headers from
@@ -109,6 +114,14 @@ ANDROID_CHECKS = [
     "tools/check_linear_texture_layout.py", "tools/check_projection_texels.py",
     "tools/check_nvn_command_shadow.py",
 ]
+
+# Files the default check set reads from prepared, unversioned trees.
+PREPARED = [
+    ("sources/las-android/runtime/ipc.h", "pinned upstream sources (sources/)"),
+    ("work/shared-android/.shared-android-stage.json", "staged Android tree (work/shared-android/)"),
+]
+PREPARE_COMMAND = ("python3 tools/fetch_sources.py && python3 tools/verify_sources.py"
+                   " && python3 tools/build_shared_android.py")
 
 ANDROID_COMPILE_FLAGS = {
     "tools/check_graphics_pipeline_library.py",
@@ -131,6 +144,16 @@ def main():
         if args.android else CHECKS
     if args.android and not (ROOT / "build/shared-android/native/compile_commands.json").is_file():
         ap.error("--android needs a completed `tools/build_shared_android.py --build`")
+    missing = [what for path, what in PREPARED if not (ROOT / path).is_file()]
+    if missing and not args.android:
+        message = (f"run_host_checks: not prepared: {'; '.join(missing)}.\n"
+                   f"Run first, from {ROOT} (no game, key or device needed):\n  {PREPARE_COMMAND}")
+        if not args.filter:
+            print(message, file=sys.stderr)
+            return 2
+        # A subset may not need the prepared trees (docs/BUILDING.md suggests `-k shared_hash`).
+        print(message + "\nContinuing with -k: checks of this subset that read them will fail.",
+              file=sys.stderr)
     for cmd, needs in checks:
         name = " ".join(cmd)
         if args.filter and args.filter not in name:

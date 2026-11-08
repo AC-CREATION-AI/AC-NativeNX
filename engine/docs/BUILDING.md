@@ -60,6 +60,12 @@ python3 tools/run_host_checks.py           # all
 python3 tools/run_host_checks.py -k kernel # a subset
 ```
 
+Most checks read the pinned sources (`sources/`, step 1) and the staged Android
+tree (`work/shared-android/`, made by `python3 tools/build_shared_android.py`
+without `--build`; no SDK needed). On a fresh clone without them the full run
+stops at once with exit status 2 and prints the commands to run first, instead
+of reporting the missing files as compilation failures. With `-k` it only warns.
+
 These compile synthetic tests with the host compiler (optimized and with
 AddressSanitizer/UBSan) and write only under `build/`. The pipeline-library check
 also uses a CPU Vulkan ICD (Mesa lavapipe), Vulkan loader development files, and
