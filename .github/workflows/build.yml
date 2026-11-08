@@ -44,7 +44,7 @@ jobs:
         run: python3 tools/refresh_source_manifests.py --check
       - name: Branding tests
         run: python3 -m unittest discover -s tests -p 'test_branding.py' -v
-      - name: Licence notice tests (repository, packaged assets, APK inventory)
+      - name: Licence notice tests (repository, packaged assets, APK inventory, artifact retention)
         run: python3 -m unittest tests.test_notices -v
 
   apk:
@@ -181,4 +181,6 @@ jobs:
           name: AC-NativeNX-${{ steps.meta.outputs.version }}-${{ github.sha }}
           path: dist/
           if-no-files-found: error
-          retention-days: 30
+          # Anyone can download the artifacts of a public repository: keep them one day (enough for
+          # release.yml, same run, and for a reviewer). tests/test_notices.py checks every upload.
+          retention-days: 1

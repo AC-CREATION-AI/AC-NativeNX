@@ -5,6 +5,7 @@ Run: python3 -m unittest tests.test_notices -v
 """
 import hashlib
 from pathlib import Path
+import re
 import sys
 import unittest
 
@@ -74,6 +75,16 @@ class PackagedNotices(unittest.TestCase):
             build_eden_shell.notice_inventory(names, required, {"GPL-3.0-or-later.txt"})
         with self.assertRaisesRegex(RuntimeError, r"APK_NOTICES_MISSING: .*GPL-3\.0-or-later\.txt"):
             build_eden_shell.notice_inventory(["assets/" + n for n in required], required, {"GPL-3.0-or-later.txt"})
+
+
+class ArtifactRetention(unittest.TestCase):
+    def test_every_uploaded_artifact_expires_after_one_day(self):
+        """CI APKs of a public repository are downloadable by anyone: keep them only for the run (ACC-3413)."""
+        for workflow in sorted((ROOT / ".github/workflows").glob("*.yml")):
+            text = workflow.read_text(encoding="utf-8")
+            uploads = text.count("actions/upload-artifact@")
+            self.assertEqual(len(re.findall(r"^\s+retention-days: 1\s*$", text, re.M)), uploads,
+                             f"{workflow.name}: every upload-artifact needs retention-days: 1")
 
 
 if __name__ == "__main__":
