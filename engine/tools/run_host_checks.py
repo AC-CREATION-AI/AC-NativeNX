@@ -84,6 +84,7 @@ CHECKS = [
     (["tools/check_shared_writable_shaders.py"], ["clang", "glslangValidator", "spirv-val"]),
     (["tools/check_generic_adapter.py"], ["clang", "clang++"]),
     (["tools/check_native_session_prepare.py"], ["clang", "clang++"]),
+    (["tools/check_guest_window_reservation.py"], ["clang"]),
     (["tools/check_raitchi_shell_bridge.py"], ["javac", "java"]),
     (["tools/check_raitchi_ui_lifecycle.py"], ["javac", "java"]),
     (["tools/check_research_environment.py"], ["javac", "java"]),

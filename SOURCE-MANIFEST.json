@@ -484,8 +484,8 @@
     },
     {
       "file": "engine/native/adapters/letsgo/profile.c",
-      "sha256": "64cde00cf34abd55d3093cea6d7409e16dd92a4c3b83fa7550844bbe89fc2556",
-      "bytes": 1723
+      "sha256": "5df536981b972cfe1137ea9fa6ea618ac34ab2817d64be83ed6837e18425f5bd",
+      "bytes": 2361
     },
     {
       "file": "engine/native/adapters/letsgo/scene.c",
@@ -3504,8 +3504,8 @@
     },
     {
       "file": "engine/tools/run_host_checks.py",
-      "sha256": "17151eb7186b894db3acd162681b21923b060f67d4b1aa4879438ac56f73e834",
-      "bytes": 9069
+      "sha256": "a8e8ba3678a8f529b5c6446827becc6de11a2a004b5933eece7505f914e8501c",
+      "bytes": 9131
     },
     {
       "file": "engine/tools/run_las_reference.py",

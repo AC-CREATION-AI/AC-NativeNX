@@ -7,7 +7,15 @@
 const TitleAdapter eevee_title_adapter = {
     .id = TITLE_EEVEE, .key = "eevee", .label = "Let's Go, Eevee!", .version = "1.0.0",
     .save_namespace = "eevee-1.0.0", .program_id = UINT64_C(0x0100187003A36000),
-    .guest_shift = 0,
+    /* The Let's Go reference runs an unshifted window at 0x7000000000, which on
+     * 39-bit VA Android (Fold4) collides with process mappings (errno 17). Share
+     * the audited Android shift like every other title (audit_game_inputs.py,
+     * LAS gen.py --shift docs): the actual window moves to [0x1000000000,
+     * 0x1320000000) while the manifest identity keeps window = canonical -
+     * shift. The AOT producer for this title is generated unshifted (pinned
+     * letsgo codegen without --shift, patches anchored at 0x7000...): its
+     * artifacts stay out of service until that generator can shift. */
+    .guest_shift = UINT64_C(0x6000000000),
     .canonical_window_lo = UINT64_C(0x7000000000), .canonical_window_hi = UINT64_C(0x7320000000),
     .capabilities = 2, .audout_min_queue_ms = 60, .module_count = 4, .main_build_prefix_size = 8,
     .main_build_prefix = {0x0a, 0x3f, 0x0d, 0x21, 0xe6, 0x7d, 0xad, 0x80},
