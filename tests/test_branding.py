@@ -14,8 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 APP_ID = "com.accreation.nativenx"
 OLD_APP_ID = "dev.igawa6.raitchi"
 APP_NAME = "AC-NativeNX"
-# GPLv3 text exactly as shipped by igawa6/Raitchi v0.0.2 (root COPYING and engine/COPYING).
-UPSTREAM_COPYING_SHA256 = "b6a8bf63ae2c95b0aa256ee774680d7bd18f21f457da75466f7610b3b16acc4e"
+# Canonical FSF GPLv3 text (https://www.gnu.org/licenses/gpl-3.0.txt, = shell/LICENSE.txt) in root COPYING and
+# engine/COPYING. Raitchi v0.0.2 shipped a retypeset copy (sha256 b6a8bf63...); replaced in ACC-3413 (C9).
+CANONICAL_COPYING_SHA256 = "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
 # Files that configure or verify the build (history/notes in *.md may mention the old id).
 BUILD_SUFFIXES = {".kts", ".gradle", ".py", ".json", ".xml", ".properties", ".yml", ".yaml", ".sh", ".txt"}
 
@@ -69,8 +70,9 @@ class BrandingTest(unittest.TestCase):
             self.assertIn(needle, notice)
 
     def test_gpl_text_unchanged(self):
-        self.assertEqual(sha(ROOT / "COPYING"), UPSTREAM_COPYING_SHA256)
-        self.assertEqual(sha(ROOT / "engine/COPYING"), UPSTREAM_COPYING_SHA256)
+        self.assertEqual(sha(ROOT / "COPYING"), CANONICAL_COPYING_SHA256)
+        self.assertEqual(sha(ROOT / "engine/COPYING"), CANONICAL_COPYING_SHA256)
+        self.assertEqual(sha(ROOT / "shell/LICENSE.txt"), CANONICAL_COPYING_SHA256)
 
     def test_shell_overlay_manifest_matches_snapshot(self):
         # restore_shell_overlay.py refuses to build if any hash differs.
