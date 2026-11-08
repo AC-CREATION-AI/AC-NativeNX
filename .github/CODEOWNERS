@@ -1,0 +1,4 @@
+# Repository ownership after the transfer to the AC-CREATION-AI organization.
+# The owner is requested as reviewer on every pull request and is the one who merges;
+# agents never merge their own PR (see AGENTS.md, "Red lines").
+*  @ptichalouf
