@@ -389,8 +389,8 @@
     },
     {
       "file": "engine/docs/shared-android-integration.md",
-      "sha256": "8158eb06ca6a7a5c04723c235e7136bffae5ade31163378d11f0c776b9893239",
-      "bytes": 15092
+      "sha256": "6ccc7eb0460b59dfc3ae723c34f815485f3aa75effa3c56ed08c8f39f4896b59",
+      "bytes": 15240
     },
     {
       "file": "engine/docs/shared-aot-codegen-probes.md",
@@ -2018,6 +2018,11 @@
       "bytes": 1666
     },
     {
+      "file": "engine/tests/guest_window_reservation_test.c",
+      "sha256": "f01b8878ff4c56f5bf2d53aa2900a7eb8a5cfd82d30843e4084e36bdd441298a",
+      "bytes": 7940
+    },
+    {
       "file": "engine/tests/headstart_external_constants_test.c",
       "sha256": "63abae3a1746e9fad3bada725aa0cb24f21fcde23431ae9817d29a9b5c341c22",
       "bytes": 6806
@@ -2886,6 +2891,11 @@
       "file": "engine/tools/check_graphics_ready.py",
       "sha256": "d8239f706f62e23bff3fb4375a3337acccdc1b2049dadd319a7e3ad73a719d5f",
       "bytes": 3390
+    },
+    {
+      "file": "engine/tools/check_guest_window_reservation.py",
+      "sha256": "8d221639cb22c4aa30eca56ace42eb8e3c0eb71ab8fbcf71bc3a8953b0a0aa9f",
+      "bytes": 2844
     },
     {
       "file": "engine/tools/check_headstart_external_constants.py",
