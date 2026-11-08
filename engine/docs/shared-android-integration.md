@@ -37,7 +37,9 @@ imports, explicit core APIs and required Android JNI entrypoints while keeping
 other implementation symbols local.
 
 Runtime addresses come from the immutable selected layout. LAS keeps its shifted
-window; Eevee keeps the unshifted window already observed on Thor. The setup gate
+window; Eevee now shares the same `0x6000000000` shift (actual window
+`[0x1000000000,0x1320000000)`): the unshifted window observed on Thor collided
+with process mappings on a 39-bit VA Fold4 (errno 17, GitHub #6). The setup gate
 checks independent expectations, selects the layout and safely reserves the
 window before `dlopen`. Failure consumes the process after successful preflight;
 switching titles or retrying a load requires a fresh process.

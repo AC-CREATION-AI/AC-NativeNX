@@ -389,8 +389,8 @@
     },
     {
       "file": "engine/docs/shared-android-integration.md",
-      "sha256": "8158eb06ca6a7a5c04723c235e7136bffae5ade31163378d11f0c776b9893239",
-      "bytes": 15092
+      "sha256": "6ccc7eb0460b59dfc3ae723c34f815485f3aa75effa3c56ed08c8f39f4896b59",
+      "bytes": 15240
     },
     {
       "file": "engine/docs/shared-aot-codegen-probes.md",
@@ -484,8 +484,8 @@
     },
     {
       "file": "engine/native/adapters/letsgo/profile.c",
-      "sha256": "64cde00cf34abd55d3093cea6d7409e16dd92a4c3b83fa7550844bbe89fc2556",
-      "bytes": 1723
+      "sha256": "5df536981b972cfe1137ea9fa6ea618ac34ab2817d64be83ed6837e18425f5bd",
+      "bytes": 2361
     },
     {
       "file": "engine/native/adapters/letsgo/scene.c",
@@ -2018,6 +2018,11 @@
       "bytes": 1666
     },
     {
+      "file": "engine/tests/guest_window_reservation_test.c",
+      "sha256": "f01b8878ff4c56f5bf2d53aa2900a7eb8a5cfd82d30843e4084e36bdd441298a",
+      "bytes": 7940
+    },
+    {
       "file": "engine/tests/headstart_external_constants_test.c",
       "sha256": "63abae3a1746e9fad3bada725aa0cb24f21fcde23431ae9817d29a9b5c341c22",
       "bytes": 6806
@@ -2888,6 +2893,11 @@
       "bytes": 3390
     },
     {
+      "file": "engine/tools/check_guest_window_reservation.py",
+      "sha256": "8d221639cb22c4aa30eca56ace42eb8e3c0eb71ab8fbcf71bc3a8953b0a0aa9f",
+      "bytes": 2844
+    },
+    {
       "file": "engine/tools/check_headstart_external_constants.py",
       "sha256": "8c13d89a300211e09561350ce48a9834fd66702beb45663dd8260b43c9088f51",
       "bytes": 5088
@@ -3504,8 +3514,8 @@
     },
     {
       "file": "engine/tools/run_host_checks.py",
-      "sha256": "17151eb7186b894db3acd162681b21923b060f67d4b1aa4879438ac56f73e834",
-      "bytes": 9069
+      "sha256": "a8e8ba3678a8f529b5c6446827becc6de11a2a004b5933eece7505f914e8501c",
+      "bytes": 9131
     },
     {
       "file": "engine/tools/run_las_reference.py",
