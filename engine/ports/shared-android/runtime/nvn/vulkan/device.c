@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #endif
 
+#include "../../milestone.h"
 #include "../../paths.h"
 #include "../../platform.h"
 #include "../../rt.h"  // (HEAP_MAX: lazy_heap_predicted)
@@ -487,6 +488,20 @@ static void core_features(VkPhysicalDeviceFeatures *b, const VkPhysicalDeviceFea
 }
 
 static void device_created(void);
+
+// Device-run milestone (milestone.h): one VK_DEVICE_OK|FAIL(<GPU, driver>) line, whichever way device creation ends.
+static void vk_device_milestone(bool ok, const char *why) {
+    milestone("VK_DEVICE_%s(%s, driver 0x%x)%s%s", ok ? "OK" : "FAIL", g_vk.props.deviceName,
+              g_vk.props.driverVersion, why ? " " : "", why ? why : "");
+}
+static void create_vk_device(const VkDeviceCreateInfo *di) {
+    VkResult r = vkCreateDevice(g_vk.phys, di, NULL, &g_vk.dev);
+    if (r != VK_SUCCESS) {
+        vk_device_milestone(false, "vkCreateDevice failed");
+        FATAL("vkCreateDevice failed: %d (%s:%d)\n", r, __FILE__, __LINE__);
+    }
+    vk_device_milestone(true, NULL);
+}
 #ifdef VK_NO_PROTOTYPES
 // A device below 1.3 (COMPAT_EXT): the same features through the extensions' own structures, each enabled as far as
 // the driver has it (what it lacks is logged: some only matter to some shaders).
@@ -559,15 +574,17 @@ static void create_device_compat(const char **ext, uint32_t n_ext, void *ext_fea
     }
 #undef WANT
     if (!(tl.timelineSemaphore || (v12 && f12.timelineSemaphore)) || !dr.dynamicRendering || !s2.synchronization2 ||
-        !eds.extendedDynamicState || !eds2.extendedDynamicState2)
+        !eds.extendedDynamicState || !eds2.extendedDynamicState2) {
+        vk_device_milestone(false, "missing Vulkan features");
         FATAL("this GPU driver lacks Vulkan features the game needs (see the lines above)\n");
+    }
     float prio = 1.0f;
     VkDeviceQueueCreateInfo qi = {.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, .queueFamilyIndex = g_vk.qfam,
                                   .queueCount = 1, .pQueuePriorities = &prio};
     VkDeviceCreateInfo di = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, .pNext = &f, .queueCreateInfoCount = 1,
                              .pQueueCreateInfos = &qi, .enabledExtensionCount = n_ext, .ppEnabledExtensionNames = ext};
     LOG("[vk] Vulkan %u.%u device with %u extensions for 1.3\n", VK_API_VERSION_MAJOR(g_vk.api), VK_API_VERSION_MINOR(g_vk.api), n_ext);
-    VK_CHECK(vkCreateDevice(g_vk.phys, &di, NULL, &g_vk.dev));
+    create_vk_device(&di);
     device_created();
 }
 #endif
@@ -858,9 +875,11 @@ static void create_device(void) {
         VkPhysicalDeviceFeatures2 hf = {.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2, .pNext = &h11};
         vkGetPhysicalDeviceFeatures2(g_vk.phys, &hf);
 #define HAVE(w, h, x) if (w.x && !h.x) { LOG("[vk] driver lacks %s\n", #x); w.x = VK_FALSE; }
-        if (!h13.dynamicRendering || !h13.synchronization2 || !h12.timelineSemaphore)
+        if (!h13.dynamicRendering || !h13.synchronization2 || !h12.timelineSemaphore) {
+            vk_device_milestone(false, "missing Vulkan features");
             FATAL("this GPU driver lacks Vulkan features the game needs (dynamic rendering, synchronization2, timeline "
                   "semaphores)\n");
+        }
         HAVE(f13, h13, shaderDemoteToHelperInvocation)
         HAVE(f13, h13, shaderTerminateInvocation) HAVE(f13, h13, maintenance4) HAVE(f12, h12, timelineSemaphore)
         HAVE(f12, h12, shaderInt8) HAVE(f12, h12, samplerMirrorClampToEdge) HAVE(f12, h12, uniformAndStorageBuffer8BitAccess)
@@ -885,7 +904,7 @@ static void create_device(void) {
                                   .queueCount = 1, .pQueuePriorities = &prio};
     VkDeviceCreateInfo di = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, .pNext = &f, .queueCreateInfoCount = 1,
                              .pQueueCreateInfos = &qi, .enabledExtensionCount = n_ext, .ppEnabledExtensionNames = ext};
-    VK_CHECK(vkCreateDevice(g_vk.phys, &di, NULL, &g_vk.dev));
+    create_vk_device(&di);
     device_created();
 }
 

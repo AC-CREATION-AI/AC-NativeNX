@@ -1119,8 +1119,8 @@
     },
     {
       "file": "engine/ports/shared-android/runtime/gamelib.c",
-      "sha256": "ab7b6f7bef2035e8606f3934424ad81648e6ee026d0b70f0f3b98814dcb62b24",
-      "bytes": 13973
+      "sha256": "9d9a949571670a7ea6ffb8f87e8df080174a1dea4a18c93b83d7b272a8bb5c4a",
+      "bytes": 14446
     },
     {
       "file": "engine/ports/shared-android/runtime/gamelib.h",
@@ -1439,8 +1439,8 @@
     },
     {
       "file": "engine/ports/shared-android/runtime/nvn/objects.c",
-      "sha256": "db7216c0d95d2beea0444afeb5d6cb1471db2a08831ade80ca157076dc18c7ad",
-      "bytes": 69130
+      "sha256": "8048d724bb9bb28710d666f5a7c4e98037bc00713ed7ce18feda8a22676c451e",
+      "bytes": 69377
     },
     {
       "file": "engine/ports/shared-android/runtime/nvn/pace.c",
@@ -1559,8 +1559,8 @@
     },
     {
       "file": "engine/ports/shared-android/runtime/nvn/vulkan/device.c",
-      "sha256": "fdf81baba818971283d175537117e6b71a7be25d298df5c0875c98b9e542685d",
-      "bytes": 127271
+      "sha256": "93449f13a7f6d575bb4f02dd01ea7b8bebc95cbd80ba72df26c496cd6b382c50",
+      "bytes": 128062
     },
     {
       "file": "engine/ports/shared-android/runtime/nvn/vulkan/exec.c",
@@ -1729,7 +1729,7 @@
     },
     {
       "file": "engine/shell.lock.json",
-      "sha256": "eb0d906f72eec5b527a0ac7cc100f606f473f82e2760c517e4d7e2ff2c698133",
+      "sha256": "8688d3ff3396afd93c283ba2c32da97a97befd1f5c7a111b9255ac0d604335be",
       "bytes": 770
     },
     {
@@ -2331,6 +2331,11 @@
       "file": "engine/tests/renderer_policy_test.c",
       "sha256": "817defda4e17d05ec06a9066ce2f45633f16d24ce161cb272f8f641f4abd94f0",
       "bytes": 1926
+    },
+    {
+      "file": "engine/tests/run_host_checks_precondition_test.py",
+      "sha256": "3ee327b8f522b9b1fc565e387fd92188a4b52f96a17a4d206f223f27980226ad",
+      "bytes": 2177
     },
     {
       "file": "engine/tests/sampled_float_compatible_test.c",
@@ -3504,8 +3509,8 @@
     },
     {
       "file": "engine/tools/run_host_checks.py",
-      "sha256": "99e8c5b7a33ae8b26b9a4d7e7852c7a3238097d7e6fd4754a65d86ee933cda91",
-      "bytes": 10392
+      "sha256": "a9aa10f92737f26495979862239aeea5e1e6247353551c74a94f51d01983ccc5",
+      "bytes": 10447
     },
     {
       "file": "engine/tools/run_las_reference.py",
@@ -7514,8 +7519,8 @@
     },
     {
       "file": "shell/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt",
-      "sha256": "2e389e2aed05f947abeb4c700431adf60dda070ea5c039d08d7f0485ff1ebbf1",
-      "bytes": 9598
+      "sha256": "03a8351f2e31de396865b1781210b63f413bf897c3dc8d8814f18ed1a53f0560",
+      "bytes": 9848
     },
     {
       "file": "shell/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/ThemeProvider.kt",
@@ -25813,5 +25818,5 @@
       "bytes": 12464
     }
   ],
-  "overlay_manifest_sha256": "0c9d2e2b94d55e0cf90a6149ad3d78dfdc9e46ea8fb22488a5e30b071a3a52de"
+  "overlay_manifest_sha256": "70f08ffca97e87ed232c68761c9fa862c8b524a6751be206b14010eb20104b12"
 }

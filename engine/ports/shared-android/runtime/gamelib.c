@@ -1,6 +1,7 @@
 /* Shared descriptor/sidecar entry; legacy LAS UI declarations are reference-only. */
 #define _GNU_SOURCE
 #include "gamelib.h"
+#include "milestone.h"
 #include "rt.h"
 #include "runtime/shared_aot.h"
 #include "shared_contract.h"
@@ -196,14 +197,19 @@ static bool native_session_prepare(const char *root, const char *path, char *why
                            adapter->key, session_layout_status_string(activated));
     const SessionLayout *active = session_layout_current();
     errno = 0;
+    const unsigned long long window_size = (unsigned long long)(active->window.hi - active->window.lo);
     if (!reserve_window(active, NULL)) {
         const int error = errno;
+        milestone("MEM_RESERVE_FAIL(%llu) [0x%llx,0x%llx) errno %d", window_size,
+                  (unsigned long long)active->window.lo, (unsigned long long)active->window.hi, error);
         return fail_format(why, capacity,
             "native guest reservation failed for %s: [0x%llx,0x%llx), errno %d (%s)",
             adapter->key, (unsigned long long)active->window.lo,
             (unsigned long long)active->window.hi, error,
             error ? strerror(error) : "exact address unavailable");
     }
+    milestone("MEM_RESERVE_OK(%llu) [0x%llx,0x%llx)", window_size,
+              (unsigned long long)active->window.lo, (unsigned long long)active->window.hi);
     if (aot_dispatch_bind_native(&native_manifest, expected, adapter->capabilities, &detail) != AOT_OK)
         return fail(why, capacity, "native text registry rejected");
     native_ready = true;

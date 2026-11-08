@@ -3162,7 +3162,7 @@
     },
     {
       "file": "src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt",
-      "sha256": "2e389e2aed05f947abeb4c700431adf60dda070ea5c039d08d7f0485ff1ebbf1"
+      "sha256": "03a8351f2e31de396865b1781210b63f413bf897c3dc8d8814f18ed1a53f0560"
     },
     {
       "file": "src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/ThemeProvider.kt",

@@ -33,6 +33,7 @@ CHECKS = [
     (["tools/check_command_lifetime.py"], ["clang"]),
     (["tools/check_compute_headstart.py"], ["clang"]),
     (["tools/check_driver_probe_recovery.py"], ["clang"]),
+    (["tools/check_device_milestones.py"], ["clang"]),
     (["tools/check_audren_work_size.py"], ["clang"]),
     (["tools/check_audio_splitter.py"], ["clang"]),
     (["tools/check_kernel_readable_copy.py"], ["clang"]),

@@ -48,6 +48,8 @@ message appeared (unsupported GPU, missing keys), copy its exact wording.
 
 ## 3. Logs (check them before pasting)
 
+`adb logcat -d -s ACMilestone` first, pasted whole: its `APP_OPEN`, `MEM_RESERVE_OK|FAIL`, `VK_DEVICE_OK|FAIL`
+and `GAME_FIRST_FRAME` lines say how far the launch got (a missing line = not reached). Then
 `adb logcat -d -b crash`, then the last ~300 lines of `adb logcat -d` filtered on the package name and
 `vulkan|fatal`. Also the app's own log file if it has one. Remove game text, key material and personal paths.
 If the app seems to run while in the background, or an `am_kill ... excessive cpu` line appears

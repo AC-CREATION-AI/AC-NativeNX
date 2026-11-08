@@ -59,6 +59,9 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         ThemeHelper.ThemeChangeListener(this)
         ThemeHelper.setTheme(this)
         super.onCreate(savedInstanceState)
+        // Device-run milestone (engine/docs/DEVICE-MILESTONES.md): the app is open. Same tag as the native ones.
+        android.util.Log.i("ACMilestone",
+            "APP_OPEN $packageName" + if (savedInstanceState != null) " (recreated)" else "")
 
         binding = ActivityMainBinding.inflate(layoutInflater)
 

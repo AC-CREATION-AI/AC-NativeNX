@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "../kernel.h"
+#include "../milestone.h"
 #include "adapters/title_adapter.h"
 #include "nvn.h"
 #include "command_recording.h"
@@ -1124,7 +1125,11 @@ NVN(nvnQueuePresentTexture) {
     keep_interval(w->interval);
     extern void widescreen_present_hook(void);  // (re-runs the game's render-resolution setup on this thread when needed)
     widescreen_present_hook();
-    if (i >= 0 && i < w->num) backend_present(HOST(NvnTexture, w->textures[i]));
+    if (i >= 0 && i < w->num) {
+        backend_present(HOST(NvnTexture, w->textures[i]));
+        static bool first_frame;  // device-run milestone (milestone.h): the game's own first present
+        if (!__atomic_exchange_n(&first_frame, true, __ATOMIC_RELAXED)) milestone("GAME_FIRST_FRAME");
+    }
 }
 
 // ================================================================== small state objects
