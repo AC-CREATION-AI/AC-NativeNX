@@ -22,7 +22,7 @@
 
 // ------------------------------------------------------------------ audren: a CPU mixer modelled on
 // Ryujinx's AudioRenderer (VoiceState / DataSourceHelper / StateUpdater; MIT, Ryujinx Team and Contributors,
-// third_party/ryujinx/LICENSE.txt).
+// LICENSES/Ryujinx-MIT.txt at the repository root, packaged in the APK as assets/LICENSE-Ryujinx.txt).
 // Voices decode PCM16 / ADPCM wave buffers, resample to 48 kHz, and mix into their destination mix's
 // buffers; sub mixes route into their destination; the final mix feeds the device sink, which we
 // downmix to stereo and push to an SDL audio stream. Voice/mix splitters and reverb are supported;

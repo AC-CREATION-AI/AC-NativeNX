@@ -268,6 +268,20 @@ def replace_method(source, signature, body):
     return source[:start + 1] + "\n" + body + "\n    " + source[index - 1:]
 
 
+def notice_assets(source):
+    """Licence notices copied into the APK assets (asset name -> file); `source` is the pinned LAS checkout.
+    build_eden_shell.notice_inventory refuses an APK that lacks any of them (APK_NOTICES_MISSING)."""
+    return {"OFL-Fredoka.txt": ROOT / "ports/shared-android/assets/fonts/OFL-Fredoka.txt",
+        "LICENSE-ButtonGlyphs.txt": ROOT / "ports/shared-android/assets/fonts/LICENSE-ButtonGlyphs.txt",
+        "LICENSE-LASRecomp.txt": source / "LICENSE",
+        "LICENSE-LetsGo.txt": ROOT / "native/runtime/LICENSE-LetsGo",
+        "LICENSE-Echoes.txt": ROOT / "native/runtime/LICENSE-Echoes",
+        "LICENSE-EoWRecomp.txt": ROOT / "native/runtime/LICENSE-EoWRecomp",
+        "LICENSE-Ryujinx.txt": ROOT.parent / "LICENSES/Ryujinx-MIT.txt",
+        "LICENSE-DejaVu.txt": source / "third_party/fonts/DejaVu/LICENSE",
+        "LICENSE-Baloo2.txt": source / "third_party/fonts/Baloo2/OFL.txt"}
+
+
 def stage(sdk, libraries, native_reports, manifest_digest, toolkit=None):
     pinned = next(x for x in json.loads((ROOT / "sources.lock.json").read_text())["sources"] if x["id"] == "las-android")
     source = ROOT / pinned["path"]
@@ -349,16 +363,9 @@ def stage(sdk, libraries, native_reports, manifest_digest, toolkit=None):
     resources = {"Baloo2-SemiBold.ttf": source / "third_party/fonts/Baloo2/Baloo2-SemiBold.ttf",
         "DejaVuSans.ttf": source / "third_party/fonts/DejaVu/DejaVuSans.ttf",
         "shared_5.ttf": ROOT / "ports/shared-android/assets/fonts/shared_5.ttf",
-        "OFL-Fredoka.txt": ROOT / "ports/shared-android/assets/fonts/OFL-Fredoka.txt",
-        "LICENSE-ButtonGlyphs.txt": ROOT / "ports/shared-android/assets/fonts/LICENSE-ButtonGlyphs.txt",
         "README-ButtonGlyphs.txt": ROOT / "ports/shared-android/assets/fonts/README.txt",
-        "icon.png": ROOT / "ports/shared-android/branding/raitchi-logo.png",
-        "LICENSE-LASRecomp.txt": source / "LICENSE",
-        "LICENSE-LetsGo.txt": ROOT / "native/runtime/LICENSE-LetsGo",
-        "LICENSE-Echoes.txt": ROOT / "native/runtime/LICENSE-Echoes",
-        "LICENSE-EoWRecomp.txt": ROOT / "native/runtime/LICENSE-EoWRecomp",
-        "LICENSE-DejaVu.txt": source / "third_party/fonts/DejaVu/LICENSE",
-        "LICENSE-Baloo2.txt": source / "third_party/fonts/Baloo2/OFL.txt"}
+        "icon.png": ROOT / "ports/shared-android/branding/raitchi-logo.png"}
+    resources.update(notice_assets(source))
     resources.update(shader_profile_catalog_assets())
     if toolkit:
         resources.update({name: ROOT / report["source"] for name, report in toolkit["assets"].items()})

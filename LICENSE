@@ -7,7 +7,10 @@ The unmodified GNU GPL version 3 license text is provided in COPYING.
 
 Individual source-file notices and retained upstream grants remain authoritative.
 In particular, the MIT-licensed LAS Recomp, Let's Go Recomp and Echoes-derived
-parts retain their MIT grants and original copyright notices. This license map
+parts retain their MIT grants and original copyright notices; so does the code
+derived from Ryujinx (MIT, Ryujinx Team and Contributors: the audio renderer in
+engine/ports/shared-android/runtime/services/audio.c and shader decoder field
+layouts in nvn/maxwell/translate.c). This license map
 does not replace those notices or relicense third-party files.
 
 Full component notices:
@@ -18,6 +21,7 @@ Full component notices:
 - engine/native/runtime/LICENSE-Echoes
 - engine/native/runtime/LICENSE-EoWRecomp
 - engine/native/adapters/echoes/LICENSE
+- LICENSES/Ryujinx-MIT.txt
 - engine/ports/letsgo-android/LICENSE-AdrenoTools
 - engine/ports/letsgo-android/LICENSE-LinkerNSBypass
 - engine/ports/shared-android/assets/fonts/OFL-Fredoka.txt
