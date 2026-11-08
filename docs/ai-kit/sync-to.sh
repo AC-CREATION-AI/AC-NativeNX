@@ -22,8 +22,10 @@ while IFS= read -r f; do FILES+=("$f"); done < <(
     printf '%s\n' \
       .github/PULL_REQUEST_TEMPLATE.md \
       .github/workflows/guard.yml \
-      tools/check_no_game_content.py tools/setup.sh tools/setup.ps1 \
-      tests/test_check_no_game_content.py tests/test_setup_check.sh
+      tools/check_no_game_content.py tools/check_no_secrets.py \
+      tools/setup.sh tools/setup.ps1 \
+      tests/test_check_no_game_content.py tests/test_check_no_secrets.py \
+      tests/test_setup_check.sh
     find .github/ISSUE_TEMPLATE -type f ! -name config.yml
   } | sort)
 

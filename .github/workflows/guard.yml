@@ -10,14 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # check_no_secrets.py --history scans every commit, no limit
       - name: Refuse game content, keys and oversized files
         run: python3 tools/check_no_game_content.py .
+      - name: Refuse secrets, in the tree and the whole history
+        run: python3 tools/check_no_secrets.py --history
   kit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Guard unit tests
-        run: python3 -m unittest tests.test_check_no_game_content -v
+        run: python3 -m unittest tests.test_check_no_game_content tests.test_check_no_secrets -v
       - name: Setup-check tests
         run: bash tests/test_setup_check.sh
       - name: Syntax of the kit scripts

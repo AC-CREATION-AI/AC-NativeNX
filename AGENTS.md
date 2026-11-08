@@ -13,14 +13,18 @@ Humans: start with [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Never put any of this into the repo, a PR, an issue, a comment, a log or a CI artifact:
 
-- games or packages: `.nsp .xci .nsz .xcz .nca .tik`, extracted `romfs/` or `exefs/`
-- keys: `prod.keys`, `title.keys`, any `*.keys`
-- firmware, system fonts (`.bfttf`), saves, shaders dumped from a game
+- games or packages: `.nsp .xci .nsz .xcz .nca .tik`, Switch executables `.nso .nro .npdm`,
+  extracted `romfs/`, `exefs/` or `extracted/`
+- keys: `prod.keys`, `title.keys`, any `*.keys` (renamed or not), key lines pasted into another file
+- signing material (`.jks .keystore .p12 .pfx .pem .der`, keystore passwords), anything under `private/`
+- firmware, system fonts (`.bfttf`), saves (`save/`), mods (`mods/`), shaders dumped from a game
 - anything generated from a game, or any file bigger than 50 MB
 
 Users bring their own game and their own keys. If a task needs a game file, it cannot
-be done in this repo: say so instead of working around it. `tools/check_no_game_content.py`
-enforces this in CI (`.github/workflows/guard.yml`); do not weaken it.
+be done in this repo: say so instead of working around it. CI enforces this with
+`tools/check_no_game_content.py` and `tools/check_no_secrets.py --history`
+(`.github/workflows/guard.yml`), and `tools/check_nativenx_content.py` (`build.yml`), which
+refuses `private/` and `evidence/` even after a `git add -f`; do not weaken them.
 
 Also:
 
@@ -99,7 +103,7 @@ Install them:
 | `sources.lock.json`, `shell.lock.json` | pinned upstream references |
 | `TESTING.md` | bounded launch results per game: read it before claiming anything about a game |
 | `skills/`, `docs/ai-kit/` | the AI kit (shared with the sibling project, see `docs/ai-kit/README.md`) |
-| `tools/` | repo-level guards and setup (`setup.sh`, `check_no_game_content.py`) |
+| `tools/` | repo-level guards and setup (`setup.sh`, `check_no_game_content.py`, `check_no_secrets.py`, `check_nativenx_content.py`) |
 | `tests/` | repo-level tests (kit, branding) |
 | `RELEASE.json`, `NOTICE.md`, `COPYING` | version / applicationId, credits, GPL text: keep them intact |
 
@@ -114,7 +118,8 @@ Run from the repo root. Report the exact command and its real exit status in you
 # Kit tests (no toolchain needed)
 python3 -m unittest discover -s tests -v
 bash tests/test_setup_check.sh
-python3 tools/check_no_game_content.py .
+python3 tools/check_no_game_content.py . && python3 tools/check_no_secrets.py --history \
+  && python3 tools/check_nativenx_content.py
 
 # Engine host checks (compile synthetic C tests; missing tools are "skipped", never "passed")
 (cd engine && python3 tools/run_host_checks.py && python3 tools/check_compatibility.py)

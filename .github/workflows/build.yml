@@ -42,6 +42,10 @@ jobs:
           python-version: "3.12"
       - name: Source manifests are current
         run: python3 tools/refresh_source_manifests.py --check
+      - name: No local-only material (private/, evidence/)
+        run: |
+          python3 tools/check_nativenx_content.py
+          python3 -m unittest tests.test_check_nativenx_content -v
       - name: Branding tests
         run: python3 -m unittest discover -s tests -p 'test_branding.py' -v
 

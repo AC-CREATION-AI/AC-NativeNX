@@ -74,6 +74,57 @@ class GuardTest(unittest.TestCase):
         self.assertIn("romfs/a.bin", r.stderr)
         self.assertIn("x/exefs/main", r.stderr)
 
+    def test_flags_switch_executables_and_fonts(self):
+        for rel in ("exe/main.nso", "exe/game.NRO", "exe/main.npdm", "exe/fs.kip",
+                    "dump/romfs.bin", "dump/exefs.bin", "font/nintendo.bfttf", "dump/c.ncz"):
+            with self.subTest(rel=rel):
+                self.put(rel)
+                self.assert_refused(rel)
+                (self.root / rel).unlink()
+
+    def test_flags_renamed_key_files(self):
+        for rel in ("PROD.KEYS.txt", "backup/prod.keys.bak", "title.keys.old"):
+            with self.subTest(rel=rel):
+                self.put(rel)
+                self.assert_refused(rel)
+                (self.root / rel).unlink()
+
+    def test_flags_signing_material(self):
+        for ext in (".jks", ".keystore", ".p12", ".pfx", ".pem", ".der", ".key"):
+            with self.subTest(ext=ext):
+                self.put("sign/release" + ext)
+                self.assert_refused("sign/release" + ext)
+                (self.root / ("sign/release" + ext)).unlink()
+
+    def test_flags_save_mods_and_extracted_dirs(self):
+        self.put("save/progress.dat")
+        self.put("a/mods/patch.txt")
+        self.put("b/Extracted/main")
+        r = run_guard(self.root)
+        self.assertEqual(r.returncode, 1)
+        for rel in ("save/progress.dat", "a/mods/patch.txt", "b/Extracted/main"):
+            self.assertIn(rel, r.stderr)
+
+    def test_similar_names_pass(self):
+        # Source files of an emulator frontend legitimately say "keys", "save" or "mod".
+        for rel in ("src/hotkeys.cpp", "src/keys_ui.h", "src/savedata/save_data.cpp",
+                    "src/mods.c", "docs/romfs.md", "src/key_manager.cpp"):
+            self.put(rel)
+        r = run_guard(self.root)
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_git_tree_checks_what_could_be_committed(self):
+        subprocess.run(["git", "-C", str(self.root), "init", "-q"], check=True)
+        self.put(".gitignore", b"/build/\n")
+        self.put("build/test-results/debug.keystore")  # ignored local test output
+        self.assertEqual(run_guard(self.root).returncode, 0)
+        self.put("new/release.jks")  # untracked, not ignored: could be committed
+        self.assert_refused("new/release.jks")
+        (self.root / "new/release.jks").unlink()
+        subprocess.run(["git", "-C", str(self.root), "add", "-f", "build/test-results/debug.keystore"],
+                       check=True)
+        self.assert_refused("build/test-results/debug.keystore")  # `git add -f` does not get through
+
     def test_flags_big_file(self):
         p = self.root / "blob.dat"
         with open(p, "wb") as f:  # sparse 60 MB

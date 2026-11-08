@@ -30,7 +30,7 @@ Goal: turn one bounded problem into a draft PR that a reviewer can check without
 3. Implement the minimal change. Keep GPL notices and copyright lines.
 4. Run and record, with exact command and exit status:
    - `python3 -m unittest discover -s tests -v`
-   - `python3 tools/check_no_game_content.py .`
+   - `python3 tools/check_no_game_content.py . && python3 tools/check_no_secrets.py && python3 tools/check_nativenx_content.py`
    - `(cd engine && python3 tools/run_host_checks.py)` when you touched engine code
    Missing tool = skipped or failed, never passed. Write "not executed" for what you did not run.
 5. Commit with Conventional Commits. Last body line: `Agent: <name> · Model: <id>`.

@@ -1,8 +1,8 @@
 # AI kit
 
 The "AI kit" makes a repository easy to work on for a contributor and their own coding agent:
-`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `skills/`, issue and PR templates, `tools/setup.sh`
-and the no-game-content guard. Its **single source is this repository (AC-NativeNX)**. The sibling
+`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `skills/`, issue and PR templates, `tools/setup.sh`,
+the no-game-content guard and the secret scanner. Its **single source is this repository (AC-NativeNX)**. The sibling
 project `letsgo-recomp-android` gets a copy through a script.
 
 ## What is synced
@@ -11,14 +11,17 @@ project `letsgo-recomp-android` gets a copy through a script.
 |---|---|
 | `skills/*` | generic, copied as is |
 | `.github/ISSUE_TEMPLATE/*`, `.github/PULL_REQUEST_TEMPLATE.md` | copied; the target keeps its own `config.yml` if it has one |
-| `tools/check_no_game_content.py`, `tests/test_check_no_game_content.py`, `.github/workflows/guard.yml` | copied as is |
+| `tools/check_no_game_content.py`, `tests/test_check_no_game_content.py`, `.github/workflows/guard.yml` | copied as is (the target keeps its default branch name in `guard.yml`) |
+| `tools/check_no_secrets.py`, `tests/test_check_no_secrets.py` | copied as is |
 | `tools/setup.sh`, `tools/setup.ps1`, `tests/test_setup_check.sh` | copied as is |
 | `docs/ai-kit/*` | copied |
 
 ## What is NOT synced (project specific, written by hand in each repo)
 
-`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`. They name the project, its licence, its map and its
-build commands. Update them by hand when the kit changes behaviour.
+`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, and the project content guard
+(`tools/check_nativenx_content.py` here, `tools/check_letsgo_content.py` in letsgo). They
+name the project, its licence, its map and its build commands. Update them by hand when
+the kit changes behaviour.
 
 ## Usage
 

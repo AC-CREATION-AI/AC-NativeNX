@@ -9,9 +9,11 @@ You do not need to be a developer to help. Pick a path.
 ## The hard rule: no game content
 
 Never add, attach, paste or link: games or packages (`.nsp .xci .nsz .xcz .nca .tik`), extracted
-`romfs/` / `exefs/`, keys (`prod.keys`, `title.keys`, `*.keys`), firmware, system fonts, saves, shader
-dumps, or anything generated from a game. That covers commits, issues, comments, logs and screenshots.
-CI blocks such files (`tools/check_no_game_content.py`). Do not ask where to get them; we will not help.
+`romfs/` / `exefs/`, keys (`prod.keys`, `title.keys`, `*.keys`), signing keys, firmware, system fonts,
+saves, shader dumps, or anything generated from a game. That covers commits, issues, comments, logs and
+screenshots. CI blocks such files and secrets (`tools/check_no_game_content.py`,
+`tools/check_no_secrets.py`, `tools/check_nativenx_content.py`). Do not ask where to get them; we will
+not help.
 
 ## Set up your agent
 
