@@ -23,6 +23,8 @@ not the current acceptance status.
 
 ## Completed
 
+- 2026-11-09 — ACC-3511: Git-free Eden shell staging now compares the complete typed tree against the locked archive plus overlay before native receipt checks or Gradle. Added, missing or modified entries, changed link targets, directory/file/link substitutions and special files are rejected. Only `src/android/.gradle/`, `src/android/raitchi-build/.gradle/` caches and the regular `src/android/local.properties` SDK configuration are excluded; module outputs remain outside the shell. Synthetic boundary tests cover the extra `qa_extra.xml` resource and legitimate outputs. Full distribution replay remains conditional on locally available pinned archives; no Android build or device qualification is claimed.
+
 - Shared Eevee startup on Thor exposed and fixed SDK exception-context allocation, an unguarded LAS save-editor callback, NULL/stage-specific NVN program binding, vertex-only shader handling, and NVN present pacing without an initialized VI event. Host binder 35 checks and pacer 7 scenarios pass optimized and ASan/UBSan runs. A static-vertex-input setting restores readable graphics on the stock Adreno driver; normal constant-buffer optimizations remain enabled. Loaded runtime/game hashes match the verified artifacts. The new manual session uses separate data and saves, no scripted input and no automatic close. Shared LAS execution, later Eevee gameplay/save routes and efficiency remain pending. See [shared Android integration](shared-android-integration.md).
 
 - Three bounded agents independently audited runtime compatibility, Android build readiness, and Thor/input availability. Their source references and findings were reviewed by the coordinator.
