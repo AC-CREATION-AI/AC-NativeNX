@@ -221,7 +221,7 @@ def source_tarball(args):
                "## Standard unsigned APK (no Git required)", "",
                "Prerequisites: Linux x86_64; Python 3.11+; JDK 17 (java, javac, jar); bash, make,",
                "a host C/C++ compiler, pkg-config, autoconf, automake, libtool, patch, perl, tar, unzip,",
-               "curl and Ninja on PATH. Install Android SDK platform android-36, build-tools 36.0.0,",
+               "curl, xz, gzip and Ninja on PATH. Install Android SDK platform android-36, build-tools 36.0.0,",
                "SDK CMake 3.31.6 and NDK r27c (27.2.12479018) under $HOME/android-sdk; accept SDK licenses.",
                "Put $HOME/android-sdk/cmake/3.31.6/bin on PATH. Gradle/Maven downloads require network",
                "access (or an already populated cache). The pinned native source archives are in deps/dl/.",
