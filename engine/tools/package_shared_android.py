@@ -95,7 +95,8 @@ def shader_profile_catalog_assets(directory=SHADER_PROFILE_CATALOG):
 
 def verify_native(sdk):
     """Bind packaging to the completed native build, current sources and dependencies."""
-    subprocess.run([sys.executable, str(ROOT / "tools/verify_sources.py")], check=True)
+    import archive_sources
+    archive_sources.verify_locks()
     manifest_path = BUILD / "native-build.json"
     record = json.loads(manifest_path.read_text())
     if (record.get("schema") != 1 or record.get("target") != "aarch64-linux-android30"

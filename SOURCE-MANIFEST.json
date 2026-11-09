@@ -3479,8 +3479,8 @@
     },
     {
       "file": "engine/tools/package_shared_android.py",
-      "sha256": "01522e09beb3802d949c0e5e498314f7817e3821b403b69a836b6ee27ffda3bc",
-      "bytes": 30893
+      "sha256": "76016607d40656ba1b80566c6c4199f2a52c2e57a00c7c054c0660a4e045b790",
+      "bytes": 30867
     },
     {
       "file": "engine/tools/prepare_native_game.py",
