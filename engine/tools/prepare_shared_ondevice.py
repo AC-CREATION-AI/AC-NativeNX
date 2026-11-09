@@ -263,10 +263,8 @@ def main():
     parser.add_argument("--cache-dir", type=Path, action="append", default=[])
     args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
-    for path, pin in ((UPSTREAM, LAS_PIN), (ROOT / "sources/letsgo", LG_PIN)):
-        actual = subprocess.check_output(["git", "-C", str(path), "rev-parse", "HEAD"], text=True).strip()
-        if actual != pin:
-            raise SystemExit("Pinned reference checkout changed")
+    import archive_sources
+    archive_sources.verify_locks()
     # Verify these exact hashes are present in the reviewed pinned recipes.
     pin_text = "\n".join((UPSTREAM / file).read_text() for file in (
         "tools/android/ondevice/build_python.sh", "tools/fetch_zig.sh", "tools/android/ondevice/make_assets.sh"))

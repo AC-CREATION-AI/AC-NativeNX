@@ -235,10 +235,19 @@ def source_tarball(args):
                "python3 tools/verify_sources.py --archives --lock echoes-source.lock.json", "```", "",
                "`--archives` checks each archive's sha256 against `deps.lock`, the `deps.lock` entry against the",
                "source lock's commit and URL, and every archived file against the unpacked tree (exit 0 = OK).",
-               "`engine/tools/build_las_baseline.py` uses this mode by itself when `engine/sources/las-android` has",
-               "no `.git`. The later stages (`prepare_shared_ondevice.py`, `build_shared_android.py`,",
-               "`restore_shell_overlay.py`, `build_eden_shell.py`) still read Git checkouts of the same commits,",
-               "made by `engine/tools/fetch_sources.py` (into empty source paths) and `restore_shell_overlay.py`.", ""]
+               "All stages below consume these locked archives without creating Git history. Use at most two jobs.",
+               "The host toolchain must be on PATH; SDK defaults to $HOME/android-sdk. No device is used.",
+               "", "```sh",
+               "python3 tools/build_las_baseline.py --deps --jobs 2",
+               "python3 tools/build_las_baseline.py --native-only --jobs 2",
+               "python3 tools/build_letsgo_ffmpeg.py --build --jobs 2",
+               "python3 tools/prepare_shared_ondevice.py --fetch --build --jobs 2",
+               "# On the first run, final toolkit metadata may require libmain.so; Capstone must exist:",
+               "test -f build/shared-ondevice/stage/jniLibs/arm64-v8a/libcapstone.so",
+               "python3 tools/build_shared_android.py --build --jobs 2",
+               "python3 tools/restore_shell_overlay.py --archives --snapshot ../shell --manifest ../shell-overlay.json --destination ../shell-restored",
+               "python3 tools/build_eden_shell.py --shell ../shell-restored --build --allow-downloads --variant release --unsigned --jobs 2",
+               "```", "", "The final APK is engine/build/eden-shell/raitchi-eden-app-release.apk (unsigned).", ""]
     git = subprocess.run(["git", "-C", str(ROOT), "archive", "--format=tar", f"--prefix={top}/", "HEAD"],
                          check=True, capture_output=True).stdout
     mtime = int(subprocess.run(["git", "-C", str(ROOT), "log", "-1", "--format=%ct"], check=True,
