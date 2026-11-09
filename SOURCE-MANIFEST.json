@@ -924,8 +924,8 @@
     },
     {
       "file": "engine/ports/shared-android/apk/app/src/main/java/com/lasrecomp/android/SharedLauncherActivity.java",
-      "sha256": "fc591f14b067b2523e3bc393ca1b1c99cb0834e7bf7f6b1347ed1fb3af9f96cd",
-      "bytes": 26886
+      "sha256": "c5e8ac34d84c5ab8774efaf71d48e7d41ee4e45bbf691cedda7386544acc9d82",
+      "bytes": 26948
     },
     {
       "file": "engine/ports/shared-android/apk/app/src/main/java/com/lasrecomp/android/TitlePolicy.java",
@@ -1119,8 +1119,8 @@
     },
     {
       "file": "engine/ports/shared-android/runtime/gamelib.c",
-      "sha256": "ab7b6f7bef2035e8606f3934424ad81648e6ee026d0b70f0f3b98814dcb62b24",
-      "bytes": 13973
+      "sha256": "d7fbd3812dcab8529b4e744eb2b54733ef018b63766bc6d06f7f6c20a09c6bea",
+      "bytes": 14168
     },
     {
       "file": "engine/ports/shared-android/runtime/gamelib.h",
@@ -1559,8 +1559,8 @@
     },
     {
       "file": "engine/ports/shared-android/runtime/nvn/vulkan/device.c",
-      "sha256": "fdf81baba818971283d175537117e6b71a7be25d298df5c0875c98b9e542685d",
-      "bytes": 127271
+      "sha256": "edef33a06ffc48bb07e47c4a0579d7bc4a52ce8c61063472d16f110a035f75a1",
+      "bytes": 127833
     },
     {
       "file": "engine/ports/shared-android/runtime/nvn/vulkan/exec.c",
@@ -1729,7 +1729,7 @@
     },
     {
       "file": "engine/shell.lock.json",
-      "sha256": "eb0d906f72eec5b527a0ac7cc100f606f473f82e2760c517e4d7e2ff2c698133",
+      "sha256": "0a62809445aa74246c8158a146573bb9703ef5245b3f22d717d8eede683984be",
       "bytes": 770
     },
     {
@@ -2526,6 +2526,11 @@
       "file": "engine/tests/test_button_font.py",
       "sha256": "2b9f952c7e5ef6290b3c423599b39384f40dcb3267dc59009b59460fe1d74f11",
       "bytes": 1361
+    },
+    {
+      "file": "engine/tests/test_run_host_checks_preconditions.py",
+      "sha256": "eb11eb8eb9fb4deea92885b30ef6986202d890886e99746fa901ea894ea46701",
+      "bytes": 2871
     },
     {
       "file": "engine/tests/texture_3d_attachment_test.c",
@@ -3504,8 +3509,8 @@
     },
     {
       "file": "engine/tools/run_host_checks.py",
-      "sha256": "17151eb7186b894db3acd162681b21923b060f67d4b1aa4879438ac56f73e834",
-      "bytes": 9069
+      "sha256": "f5078efc50e78fb4e2c30c11e3a25d6ed5c930e8e839c1b41b56cd55a74c7466",
+      "bytes": 10116
     },
     {
       "file": "engine/tools/run_las_reference.py",
@@ -7514,8 +7519,8 @@
     },
     {
       "file": "shell/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/MainActivity.kt",
-      "sha256": "2e389e2aed05f947abeb4c700431adf60dda070ea5c039d08d7f0485ff1ebbf1",
-      "bytes": 9598
+      "sha256": "a5813e145011758ce1ed13dd723b5ca0aba54252f12f9cc523051bf8dcd6f9a4",
+      "bytes": 9650
     },
     {
       "file": "shell/src/android/app/src/main/java/org/yuzu/yuzu_emu/ui/main/ThemeProvider.kt",
@@ -25813,5 +25818,5 @@
       "bytes": 12464
     }
   ],
-  "overlay_manifest_sha256": "0c9d2e2b94d55e0cf90a6149ad3d78dfdc9e46ea8fb22488a5e30b071a3a52de"
+  "overlay_manifest_sha256": "5f988eea7cd664725f9eb505b7717977ff9fe4ca55c7cb31be3db7fb48b23d32"
 }

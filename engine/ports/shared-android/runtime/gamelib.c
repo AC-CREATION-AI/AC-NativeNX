@@ -56,7 +56,12 @@ static void decode_contract(const char *hex, uint8_t out[32]) {
 }
 static int reserve_window(const SessionLayout *layout, void *context) {
     (void)context;
-    if (!plat_reserve_guest(layout->window.lo, layout->window.hi)) return 0;
+    unsigned long long size = (unsigned long long)(layout->window.hi - layout->window.lo);
+    if (!plat_reserve_guest(layout->window.lo, layout->window.hi)) {
+        LOG("MEM_RESERVE_FAIL(%llu)\n", size);
+        return 0;
+    }
+    LOG("MEM_RESERVE_OK(%llu)\n", size);
     return 1;
 }
 bool shared_session_prepare(const char *game_root, const char *library,
