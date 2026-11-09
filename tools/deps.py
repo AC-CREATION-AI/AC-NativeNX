@@ -239,7 +239,7 @@ def source_tarball(args):
                "The host toolchain must be on PATH; SDK defaults to $HOME/android-sdk. No device is used.",
                "", "```sh",
                "python3 tools/build_las_baseline.py --deps --jobs 2",
-               "python3 tools/build_las_baseline.py --apk --jobs 2",
+               "python3 tools/build_las_baseline.py --native-only --jobs 2",
                "python3 tools/build_letsgo_ffmpeg.py --build --jobs 2",
                "python3 tools/prepare_shared_ondevice.py --fetch --build --jobs 2",
                "# On the first run, final toolkit metadata may require libmain.so; Capstone must exist:",

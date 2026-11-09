@@ -29,6 +29,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deps", action="store_true", help="Fetch and build pinned native dependencies")
     parser.add_argument("--apk", action="store_true", help="Build the separate .test launcher APK (no game code)")
+    parser.add_argument("--native-only", action="store_true", help="Build SDL/AdrenoTools caches without packaging or signing an APK")
     parser.add_argument("--game", action="store_true", help="Build the private game library from imported LAS inputs")
     parser.add_argument("--package-game", action="store_true", help="Package an existing local game library in a private .test APK")
     parser.add_argument("--jobs", type=int, default=4)
@@ -93,8 +94,9 @@ def main():
     env["PATH"] = f"{sdk}/cmake/3.31.6/bin:{env['JAVA_HOME']}/bin:{env.get('PATH', '')}"
     if args.deps:
         run(["bash", "tools/android/build_deps.sh"], cwd=WORK, env=env)
-    if args.apk:
-        run(["./gradlew", ":app:assembleDebug", "-PlasTestId", "--no-daemon", f"--max-workers={args.jobs}"], cwd=WORK / "android", env=env)
+    if args.apk or args.native_only:
+        task = ':app:externalNativeBuildDebug' if args.native_only else ':app:assembleDebug'
+        run(["./gradlew", task, "-PlasTestId", "--no-daemon", f"--max-workers={args.jobs}"], cwd=WORK / "android", env=env)
     if args.game:
         inputs = ROOT / "private/las-baseline/extracted"
         if not (inputs / "exefs/main").is_file():

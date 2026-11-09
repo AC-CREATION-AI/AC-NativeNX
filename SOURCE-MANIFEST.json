@@ -2593,6 +2593,11 @@
       "bytes": 2399
     },
     {
+      "file": "engine/tools/archive_sources.py",
+      "sha256": "d3a3f977404b36962b29ba16f83e481648431b3bb02911372525a5d2e7c16454",
+      "bytes": 1756
+    },
+    {
       "file": "engine/tools/audit_game_inputs.py",
       "sha256": "fc74d2728658e7853ffd63d95ba9cd195cd1d03ef22cf44f3093e81ef499b34d",
       "bytes": 12082
@@ -2624,8 +2629,8 @@
     },
     {
       "file": "engine/tools/build_las_baseline.py",
-      "sha256": "251972869d7a53dc362bf81b4fa6fbcad29c91bdbbf3206625e9f3944ec6b3ca",
-      "bytes": 6006
+      "sha256": "71f0a010999c5c3476620a6146ca45adbad469cd1db96ee8b5757948c7f8218f",
+      "bytes": 6238
     },
     {
       "file": "engine/tools/build_letsgo_android.py",
