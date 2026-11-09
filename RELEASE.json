@@ -12,6 +12,6 @@
   },
   "default_cpu": "continuous-nce",
   "release_apk_sha256": null,
-  "source_manifest_sha256": "cf551975a3f4a0c8080050650b5cf48d1ae7a650d497b80286107a78d82585ee",
+  "source_manifest_sha256": "51bde71f4974573aa8b590bbd52c4316bf9e6c221636b2fddf629039ed6fc34d",
   "scope": "Experimental Android ARM64 preview, not yet device-tested by AC-Création. No public release before a real-device report. See TESTING.md (upstream Raitchi 0.0.2 observations) for bounded compatibility."
 }

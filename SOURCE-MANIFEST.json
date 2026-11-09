@@ -1729,7 +1729,7 @@
     },
     {
       "file": "engine/shell.lock.json",
-      "sha256": "eb0d906f72eec5b527a0ac7cc100f606f473f82e2760c517e4d7e2ff2c698133",
+      "sha256": "d63c397a08ebbc50d621786b2698abb0f31f9cb2e1392a306e3d776ddf3ffb5a",
       "bytes": 770
     },
     {
@@ -2619,8 +2619,8 @@
     },
     {
       "file": "engine/tools/build_eden_shell.py",
-      "sha256": "c490ed55e202c0f924eb342f11599a97d137fe3e36ab63671d9c707ff424da5e",
-      "bytes": 15563
+      "sha256": "c14a53f52213199a603cdf3ced0caf9bd3e021aed1ff515adfed7875e8bc1d9a",
+      "bytes": 17403
     },
     {
       "file": "engine/tools/build_las_baseline.py",
@@ -2654,8 +2654,8 @@
     },
     {
       "file": "engine/tools/build_shared_android.py",
-      "sha256": "2eb4807eebe26ea65f4229638db2fc3efb196e2fc6ed2c432af390d90d2b370c",
-      "bytes": 20111
+      "sha256": "cd583912243c39c65e3f75b57c17ada00e4fa821284b82dd61c379b1e7c51cdf",
+      "bytes": 20259
     },
     {
       "file": "engine/tools/build_shared_gamelib.py",
@@ -3484,8 +3484,8 @@
     },
     {
       "file": "engine/tools/prepare_shared_ondevice.py",
-      "sha256": "2fed1a56345b37d8b93083adfd544c52969624e5b43a90faaf4e6142966c85d0",
-      "bytes": 22050
+      "sha256": "e8937322ed11611baee1a527b4d9ae5615f42ce788e07055ade9394cebccb8f7",
+      "bytes": 21834
     },
     {
       "file": "engine/tools/probe_shared_aot_codegen.py",
@@ -3499,8 +3499,8 @@
     },
     {
       "file": "engine/tools/restore_shell_overlay.py",
-      "sha256": "46e0f287ec3d2c3626abcc2110fa014e6717e754edcc81dbdea6e341efd362b3",
-      "bytes": 2983
+      "sha256": "68e2e5da32c704ebfb19207290537d4319d587e338dd6c30549a03ab3c512039",
+      "bytes": 3858
     },
     {
       "file": "engine/tools/run_host_checks.py",
@@ -7094,8 +7094,8 @@
     },
     {
       "file": "shell/src/android/app/build.gradle.kts",
-      "sha256": "2382ccc6e0c40fb65920289e09714a18f44a6165eddcb22f1ff5d30b00aada44",
-      "bytes": 3892
+      "sha256": "d90d1682a262a8455f47fcb7c3684d9756c1fe545e50011ef1600c73026a2954",
+      "bytes": 4055
     },
     {
       "file": "shell/src/android/app/proguard-rules.pro",
@@ -25813,5 +25813,5 @@
       "bytes": 12464
     }
   ],
-  "overlay_manifest_sha256": "0c9d2e2b94d55e0cf90a6149ad3d78dfdc9e46ea8fb22488a5e30b071a3a52de"
+  "overlay_manifest_sha256": "60f494ddc6be7bb6946cd062be4188054f24cf6c4d7ca5d6e0d5389b22eba9ee"
 }
