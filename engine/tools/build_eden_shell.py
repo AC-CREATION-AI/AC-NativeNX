@@ -95,7 +95,18 @@ def strip_libraries(sdk, libraries, reports):
     return packaged, packaged_reports
 
 
-def inspect_apk(apk, sdk, reports, assets):
+def notice_inventory(names, engine_notices, shell_notices):
+    """Licence and notice files inside the APK. Every engine notice (package_shared_android.notice_assets) and
+    every shell licence text (shell/LICENSES/*.txt) must be there, otherwise APK_NOTICES_MISSING."""
+    present = {n[len("assets/"):] for n in names if n.startswith("assets/") and "/" not in n[len("assets/"):]}
+    missing = sorted((set(engine_notices) | set(shell_notices)) - present)
+    if missing:
+        raise RuntimeError("APK_NOTICES_MISSING: " + ", ".join(missing))
+    return sorted(n for n in present if n in shell_notices or n in engine_notices
+                  or re.match(r"(LICENSE|OFL|COPYING|NOTICE)", n))
+
+
+def inspect_apk(apk, sdk, reports, assets, shell):
     alignment = engine.verify_apk_alignment(apk, sdk)
     build_tools = sdk / "build-tools/36.0.0"
     signature = run([build_tools / "apksigner", "verify", "--verbose", "--print-certs", apk],
@@ -137,6 +148,8 @@ def inspect_apk(apk, sdk, reports, assets):
                 engine.check_button_font.check_font(asset_data, "APK assets/shared_5.ttf")
         if "assets/GPL-3.0-or-later.txt" not in archive.namelist():
             raise RuntimeError("Eden shell license is missing")
+        notices = notice_inventory(archive.namelist(), engine.notice_assets(Path("/las-source")),
+                                   {p.name for p in (shell / "LICENSES").glob("*.txt")})
         for item in archive.infolist():
             if item.filename.startswith("lib/"):
                 category = Path(item.filename).name
@@ -152,7 +165,7 @@ def inspect_apk(apk, sdk, reports, assets):
             entry["raw_bytes"] += item.file_size
             entry["compressed_bytes"] += item.compress_size
     return {"apk": str(apk.relative_to(ROOT)), "apk_sha256": sha(apk), "apk_bytes": apk.stat().st_size,
-            "size_components": table, "native_alignment": alignment,
+            "size_components": table, "native_alignment": alignment, "notices": notices,
             "signature": signature.strip(), "host_build_and_lint_passed": True,
             "device_installed": False}
 
@@ -227,7 +240,9 @@ def main():
         source = BUILD / f"gradle/app/outputs/apk/{variant}/app-{variant}.apk"
         apk = BUILD / f"raitchi-eden-app-{variant}.apk"
         shutil.copy2(source, apk)
-        receipt["variants"][variant] = inspect_apk(apk, sdk, reports, stage["asset_sha256"])
+        receipt["variants"][variant] = inspect_apk(apk, sdk, reports, stage["asset_sha256"], shell)
+        (BUILD / f"notices-{variant}.txt").write_text("".join(
+            "assets/" + n + "\n" for n in receipt["variants"][variant]["notices"]))
         if variant == "release":
             mapping = BUILD / "gradle/app/outputs/mapping/release/mapping.txt"
             archived = BUILD / "symbols/r8" / receipt["variants"][variant]["apk_sha256"] / "mapping.txt"

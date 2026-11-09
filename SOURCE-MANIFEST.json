@@ -24,8 +24,8 @@
     },
     {
       "file": "engine/COPYING",
-      "sha256": "b6a8bf63ae2c95b0aa256ee774680d7bd18f21f457da75466f7610b3b16acc4e",
-      "bytes": 34670
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149
     },
     {
       "file": "engine/LICENSE",
@@ -1654,8 +1654,8 @@
     },
     {
       "file": "engine/ports/shared-android/runtime/services/audio.c",
-      "sha256": "8de9b9389921158d79ab1dbcf561bde1c7e1502707ad091ae51e7ea5c5d1d39a",
-      "bytes": 76039
+      "sha256": "39417585522836311f4e2f3f998fe9bd1c1c807235820ab58a8e289e5ff41a4d",
+      "bytes": 76106
     },
     {
       "file": "engine/ports/shared-android/runtime/services/audren_work_size.c",
@@ -2619,8 +2619,8 @@
     },
     {
       "file": "engine/tools/build_eden_shell.py",
-      "sha256": "5242e927cc68584184c78201d51e557447a47711f1aa075a9956c45cf4fe75f1",
-      "bytes": 14497
+      "sha256": "c490ed55e202c0f924eb342f11599a97d137fe3e36ab63671d9c707ff424da5e",
+      "bytes": 15563
     },
     {
       "file": "engine/tools/build_las_baseline.py",
@@ -3474,8 +3474,8 @@
     },
     {
       "file": "engine/tools/package_shared_android.py",
-      "sha256": "a208c457b2ce4c9a5b9f72f6dd61f477d752f1f67ab62bc86d04bcbad8caee1a",
-      "bytes": 30532
+      "sha256": "01522e09beb3802d949c0e5e498314f7817e3821b403b69a836b6ee27ffda3bc",
+      "bytes": 30893
     },
     {
       "file": "engine/tools/prepare_native_game.py",

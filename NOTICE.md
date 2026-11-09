@@ -26,6 +26,7 @@ Original copyright and SPDX headers remain in the adapted source files.
 | Raitchi | igawa6/Raitchi `535890ff982c871a16e4d2c5fe4e971309896f4a` (v0.0.2) | Engine, shared runtime, shell integration and tooling by igawa6 and contributors; GPL-3.0-or-later. Base of this fork. |
 | Eden Android shell | Upstream `989768aa46720e3fcab9e2111e3ddd70819c382b` | Separate GPL-3.0-or-later frontend; retains its own `LICENSE.txt`, per-file notices and upstream history. [Shell lock](engine/shell.lock.json) records the actual upstream base and hashed uncommitted source overlay. The distribution URL is igawa6/Raitchi; no published integration commit is asserted. |
 | AdrenoTools and LinkerNSBypass | Dependency inventory produced by the Android build | BSD 2-Clause, Billy Laws. [AdrenoTools notice](engine/ports/letsgo-android/LICENSE-AdrenoTools), [LinkerNSBypass notice](engine/ports/letsgo-android/LICENSE-LinkerNSBypass). |
+| Ryujinx | Software Heritage archive of github.com/Ryujinx/Ryujinx (`master` `cd74ae1bbd491987d983bfff36545451e2e6764c`, `LICENSE.txt` = `swh:1:cnt:818ddd76058d49f42eed9c0ecb580777c7f87d7e`); the original repository no longer exists | Audio renderer mixer and reverb port (`engine/ports/shared-android/runtime/services/audio.c`) and shader instruction decoder field layouts (`engine/ports/shared-android/runtime/nvn/maxwell/translate.c`), inherited from Raitchi / LAS Recomp; MIT, Ryujinx Team and Contributors. [Notice](LICENSES/Ryujinx-MIT.txt) (same text and provenance as letsgo-recomp-android `LICENSES/Ryujinx-MIT.txt`). |
 | Fredoka / attributed button glyphs | Bundled font assets | [Fredoka SIL OFL 1.1](engine/ports/shared-android/assets/fonts/OFL-Fredoka.txt); [button-glyph MIT notice](engine/ports/shared-android/assets/fonts/LICENSE-ButtonGlyphs.txt) and [font provenance](engine/ports/shared-android/assets/fonts/README.txt). |
 
 ## Packaged dependencies and notices
@@ -38,9 +39,11 @@ replace those licenses. Exact dependency versions, archive identities and build
 options come from the build manifests used for the artifact.
 
 [The asset packager](engine/tools/package_shared_android.py) copies LAS, Let's Go,
-Echoes, Fredoka and button-glyph notices, plus the Baloo2 and DejaVu notices
-alongside those fonts. [The shell builder](engine/tools/build_eden_shell.py) verifies
-that the shell's `assets/GPL-3.0-or-later.txt` is present. Preserve these assets
+Echoes, Ryujinx, Fredoka and button-glyph notices, plus the Baloo2 and DejaVu notices
+alongside those fonts. [The shell builder](engine/tools/build_eden_shell.py) refuses an
+APK that lacks any of these notices or any of the shell's `LICENSES/*.txt` texts
+(`APK_NOTICES_MISSING`) and writes the APK's notice inventory, published with each CI
+build as `AC-NativeNX-<version>-notices.txt`. Preserve these assets
 and the shell's license viewer when repackaging. Additional linked dependencies
 must retain their own notices; this list does not assert that an uninspected APK
 contains every required notice or source file.
