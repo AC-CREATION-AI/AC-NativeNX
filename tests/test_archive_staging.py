@@ -33,6 +33,11 @@ class ArchiveStaging(unittest.TestCase):
                 ['tools/restore_shell_overlay.py', '--archives', '--snapshot', '../shell', '--manifest', '../shell-overlay.json', '--destination', '../restored'],
             ):
                 subprocess.run([sys.executable, *command], cwd=engine, check=True, capture_output=True)
+            result = subprocess.run([sys.executable, 'tools/build_eden_shell.py', '--shell', '../restored', '--unsigned'], cwd=engine, capture_output=True, text=True)
+            # Native compilation is deliberately not part of this lightweight staging test.
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('native-build.json', result.stderr)
+            self.assertNotIn('not a git repository', result.stderr)
             self.assertFalse(list(tree.rglob('.git')))
             # Unpacked tree integrity remains mandatory at every staging entry point.
             victim = engine / 'sources/las-android/README.md'
