@@ -1,6 +1,7 @@
 # AC-NativeNX CI build: reproduces engine/docs/BUILDING.md on Ubuntu x86-64.
 # Produces AC-NativeNX-<ver>-arm64-v8a.apk (signed with a throw-away per-run test
-# key) and AC-NativeNX-<ver>-source.tar.gz (corresponding GPL source).
+# key) and AC-NativeNX-<ver>-source.tar.gz (corresponding GPL source: this tree + every upstream
+# archive pinned in deps.lock, see tools/deps.py).
 # No game, key, firmware or device is used or needed.
 name: build
 
@@ -44,6 +45,12 @@ jobs:
         run: python3 tools/refresh_source_manifests.py --check
       - name: Branding tests
         run: python3 -m unittest discover -s tests -p 'test_branding.py' -v
+      - name: Licence notice tests (repository, packaged assets, APK inventory, artifact retention)
+        run: python3 -m unittest tests.test_notices -v
+      - name: deps.lock (pins, cpmfile.json, build scripts; archive test skipped without downloads)
+        run: |
+          python3 -m unittest tests.test_deps_lock -v
+          python3 tools/deps.py check
 
   apk:
     name: arm64-v8a APK + source archive
@@ -108,6 +115,19 @@ jobs:
           python3 tools/verify_sources.py
           python3 tools/verify_sources.py --lock echoes-source.lock.json
 
+      - uses: actions/cache@v6
+        with:
+          path: deps/dl
+          key: deps-dl-${{ hashFiles('deps.lock') }}
+
+      # Corresponding source: every upstream archive the APK is built from, checked against deps.lock, and
+      # deps.lock checked against the pinned build scripts (LAS build_deps.sh / CMakeLists.txt, shaderc DEPS).
+      - name: 1b. Pinned upstream archives (deps.lock)
+        working-directory: .
+        run: |
+          python3 tools/deps.py fetch
+          python3 tools/deps.py check
+
       - name: 2a. LAS baseline native dependencies
         run: python3 tools/build_las_baseline.py --deps --jobs "$JOBS"
 
@@ -162,8 +182,10 @@ jobs:
           apk="dist/AC-NativeNX-${AC_VERSION}-arm64-v8a.apk"
           cp engine/build/eden-shell/raitchi-eden-app-release.apk "$apk"
           cp engine/build/eden-shell/apk.json "dist/AC-NativeNX-${AC_VERSION}-build-receipt.json"
-          git archive --format=tar --prefix="AC-NativeNX-${AC_VERSION}/" HEAD \
-            | gzip -n -9 > "dist/AC-NativeNX-${AC_VERSION}-source.tar.gz"
+          # Licence notices inside the APK; build_eden_shell.py already refused the APK if one was missing.
+          cp engine/build/eden-shell/notices-release.txt "dist/AC-NativeNX-${AC_VERSION}-notices.txt"
+          # This tree + the unmodified upstream archives of deps.lock; fails if one is missing.
+          python3 tools/deps.py source-tarball "dist/AC-NativeNX-${AC_VERSION}-source.tar.gz" "$AC_VERSION"
           (cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS)
           ls -l dist
           {
@@ -177,4 +199,6 @@ jobs:
           name: AC-NativeNX-${{ steps.meta.outputs.version }}-${{ github.sha }}
           path: dist/
           if-no-files-found: error
-          retention-days: 30
+          # Anyone can download the artifacts of a public repository: keep them one day (enough for
+          # release.yml, same run, and for a reviewer). tests/test_notices.py checks every upload.
+          retention-days: 1

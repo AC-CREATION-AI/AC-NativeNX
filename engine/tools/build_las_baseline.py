@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Prepare an isolated, stock-clock LAS Android reference; build only on request."""
 import argparse
+import difflib
+import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,14 +36,27 @@ def main():
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("--jobs must be positive")
-    run(["python3", ROOT / "tools/verify_sources.py"])
-    if not WORK.exists():
-        WORK.parent.mkdir(parents=True, exist_ok=True)
-        run(["git", "clone", "--shared", ROOT / "sources/las-android", WORK])
-    original = run(["git", "-C", ROOT / "sources/las-android", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-    actual = run(["git", "-C", WORK, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-    if original != actual:
-        raise RuntimeError("Baseline working tree no longer uses the pinned source")
+    source = ROOT / "sources/las-android"
+    # No .git: unpacked from the corresponding source archive (SOURCE-README.md), verified against deps.lock.
+    archived = not (source / ".git").exists()
+    run(["python3", ROOT / "tools/verify_sources.py", *(["--archives"] if archived else [])])
+    if archived:
+        pinned = next(s["commit"] for s in json.loads((ROOT / "sources.lock.json").read_text())["sources"]
+                      if s["id"] == "las-android")
+        marker = WORK / ".las-baseline-commit"
+        if not WORK.exists():
+            shutil.copytree(source, WORK, symlinks=True)
+            marker.write_text(pinned + "\n")
+        if not marker.is_file() or marker.read_text().strip() != pinned:
+            raise RuntimeError("Baseline working tree no longer uses the pinned source")
+    else:
+        if not WORK.exists():
+            WORK.parent.mkdir(parents=True, exist_ok=True)
+            run(["git", "clone", "--shared", source, WORK])
+        original = run(["git", "-C", source, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+        actual = run(["git", "-C", WORK, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+        if original != actual:
+            raise RuntimeError("Baseline working tree no longer uses the pinned source")
     replace_once(
         WORK / "android/app/src/main/java/com/lasrecomp/android/RootBoost.java",
         'return p.getBoolean("root_boost", true) && hasSu();',
@@ -63,7 +79,11 @@ def main():
     (WORK / "android/local.properties").write_text(f"sdk.dir={sdk}\ncmake.dir={sdk}/cmake/3.31.6\n")
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
-    patch = run(["git", "-C", WORK, "diff", "--", "android/app/src/main/java/com/lasrecomp/android/RootBoost.java", "android/app/CMakeLists.txt", "tools/android/build_deps.sh", "tools/android/build_game.sh"], capture_output=True, text=True).stdout
+    patched = ["android/app/src/main/java/com/lasrecomp/android/RootBoost.java", "android/app/CMakeLists.txt", "tools/android/build_deps.sh", "tools/android/build_game.sh"]
+    if archived:
+        patch = "".join("".join(difflib.unified_diff((source / f).read_text().splitlines(True), (WORK / f).read_text().splitlines(True), f"a/{f}", f"b/{f}")) for f in patched)
+    else:
+        patch = run(["git", "-C", WORK, "diff", "--", *patched], capture_output=True, text=True).stdout
     (evidence / "las-baseline.patch").write_text(patch)
     env = dict(os.environ)
     env.update(ANDROID_HOME=str(sdk), ANDROID_SDK_ROOT=str(sdk),
