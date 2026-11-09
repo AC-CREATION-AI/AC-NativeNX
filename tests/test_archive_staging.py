@@ -10,6 +10,36 @@ sys.path.insert(0, str(TOOLS))
 
 
 class ArchiveStaging(unittest.TestCase):
+    def test_real_distribution_stages_without_git(self):
+        import os
+        import subprocess
+        root = Path(__file__).resolve().parents[1]
+        if not (root / 'deps/dl').is_dir():
+            self.skipTest('pinned archives unavailable; run tools/deps.py fetch')
+        with tempfile.TemporaryDirectory() as directory:
+            archive = Path(directory) / 'source.tar.gz'
+            subprocess.run([sys.executable, root / 'tools/deps.py', 'source-tarball', archive, 'test'], check=True, capture_output=True)
+            import tarfile
+            with tarfile.open(archive) as stream:
+                stream.extractall(directory, filter='data')
+            tree = Path(directory) / 'AC-NativeNX-test'
+            readme = (tree / 'SOURCE-README.md').read_text()
+            subprocess.run(['bash', '-e', '-c', readme.split('```sh')[1].split('```')[0]], cwd=tree, check=True, capture_output=True)
+            engine = tree / 'engine'
+            for command in (
+                ['tools/prepare_shared_ondevice.py'],
+                ['tools/build_shared_android.py'],
+                ['tools/build_las_baseline.py'],
+                ['tools/restore_shell_overlay.py', '--archives', '--snapshot', '../shell', '--manifest', '../shell-overlay.json', '--destination', '../restored'],
+            ):
+                subprocess.run([sys.executable, *command], cwd=engine, check=True, capture_output=True)
+            self.assertFalse(list(tree.rglob('.git')))
+            # Unpacked tree integrity remains mandatory at every staging entry point.
+            victim = engine / 'sources/las-android/README.md'
+            victim.write_text('tampered')
+            result = subprocess.run([sys.executable, 'tools/build_shared_android.py'], cwd=engine, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+
     def test_verified_stage_never_copies_untracked_extras(self):
         spec = importlib.util.spec_from_file_location('archive_sources', TOOLS / 'archive_sources.py')
         module = importlib.util.module_from_spec(spec)
