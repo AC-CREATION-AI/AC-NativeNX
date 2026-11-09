@@ -238,6 +238,8 @@ def source_tarball(args):
                "All stages below consume these locked archives without creating Git history. Use at most two jobs.",
                "The host toolchain must be on PATH; SDK defaults to $HOME/android-sdk. No device is used.",
                "", "```sh",
+               "# Bound JVM CPU use; SerialGC also avoids the observed host Temurin 17 G1 SIGSEGV:",
+               "export JAVA_TOOL_OPTIONS='-XX:+UseSerialGC -XX:ActiveProcessorCount=2'",
                "python3 tools/build_las_baseline.py --deps --jobs 2",
                "python3 tools/build_las_baseline.py --native-only --jobs 2",
                "python3 tools/build_letsgo_ffmpeg.py --build --jobs 2",
