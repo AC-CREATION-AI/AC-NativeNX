@@ -9,6 +9,7 @@ from pathlib import Path
 import re
 import secrets
 import shutil
+import stat
 import subprocess
 import sys
 import zipfile
@@ -171,6 +172,44 @@ def inspect_apk(apk, sdk, reports, assets, shell, unsigned=False):
             "device_installed": False}
 
 
+def verify_archive_shell(expected, shell):
+    """Compare all entries without following links, not just known source files."""
+    # Gradle caches and SDK configuration are the only in-tree outputs. Module
+    # build outputs live outside the shell (raitchi-build/build.gradle.kts).
+    output_directories = {'src/android/.gradle', 'src/android/raitchi-build/.gradle'}
+    output_files = {'src/android/local.properties'}
+
+    def inventory(root, allow_outputs=False):
+        entries = {}
+
+        def visit(directory):
+            for path in sorted(directory.iterdir()):
+                name = path.relative_to(root).as_posix()
+                mode = path.lstat().st_mode
+                if stat.S_ISLNK(mode):
+                    value = ('link', os.readlink(path))
+                elif stat.S_ISDIR(mode):
+                    if allow_outputs and name in output_directories:
+                        continue
+                    value = ('directory',)
+                    visit(path)
+                elif stat.S_ISREG(mode):
+                    if allow_outputs and name in output_files:
+                        continue
+                    value = ('file', sha(path))
+                else:
+                    raise RuntimeError('Archive shell differs: unsupported entry ' + name)
+                entries[name] = value
+        visit(root)
+        return entries
+
+    wanted = inventory(expected)
+    actual = inventory(shell, allow_outputs=True)
+    for name in sorted(wanted.keys() | actual.keys()):
+        if wanted.get(name) != actual.get(name):
+            raise RuntimeError('Archive shell differs: ' + name)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     lock = json.loads(SHELL_LOCK.read_text())
@@ -198,17 +237,7 @@ def main():
             run([sys.executable, Path(restore_shell_overlay.__file__), '--archives',
                  '--snapshot', ROOT.parent / 'shell', '--manifest', manifest_path,
                  '--destination', expected])
-            for item in expected.rglob('*'):
-                relative = item.relative_to(expected)
-                target = shell / relative
-                if item.is_symlink():
-                    valid = target.is_symlink() and os.readlink(item) == os.readlink(target)
-                elif item.is_file():
-                    valid = target.is_file() and not target.is_symlink() and sha(item) == sha(target)
-                else:
-                    continue
-                if not valid:
-                    raise RuntimeError('Archive shell differs: ' + str(relative))
+            verify_archive_shell(expected, shell)
             if any((shell / name).exists() for name in manifest['deleted_upstream_files']):
                 raise RuntimeError('Deleted upstream shell file restored')
         base = head = manifest['upstream_commit']

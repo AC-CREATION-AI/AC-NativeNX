@@ -39,6 +39,16 @@ class ArchiveStaging(unittest.TestCase):
             self.assertIn('native-build.json', result.stderr)
             self.assertNotIn('not a git repository', result.stderr)
             self.assertFalse(list(tree.rglob('.git')))
+            extra = tree / 'restored/src/android/app/src/main/res/values/qa_extra.xml'
+            extra.write_text('<resources/>')
+            result = subprocess.run([sys.executable, 'tools/build_eden_shell.py', '--shell', '../restored',
+                                     '--unsigned', '--build', '--jobs', '2'],
+                                    cwd=engine, capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('Archive shell differs:', result.stderr)
+            self.assertIn('qa_extra.xml', result.stderr)
+            self.assertNotIn('native-build.json', result.stderr)
+            self.assertFalse((engine / 'build/eden-shell/build.log').exists())
             # Unpacked tree integrity remains mandatory at every staging entry point.
             victim = engine / 'sources/las-android/README.md'
             victim.write_text('tampered')
@@ -79,3 +89,89 @@ class ArchiveStaging(unittest.TestCase):
             with self.assertRaises(ValueError):
                 module.extract(archive, root / 'stage')
             self.assertFalse((root / 'escape').exists())
+
+
+class ShellBuildBoundary(unittest.TestCase):
+    def test_archive_shell_inventory_before_native_or_gradle(self):
+        import build_eden_shell as builder
+        import json
+        import os
+        import shutil
+        from unittest.mock import patch
+
+        cases = ('clean', 'extra', 'missing', 'modified', 'file_link',
+                 'directory_link', 'broken_extra_link', 'changed_link',
+                 'link_as_file', 'fifo', 'outputs', 'nested_build', 'output_link')
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                expected, restored = root / 'expected', root / 'restored'
+                resource = 'src/android/app/src/main/res/values/base.xml'
+                extra = 'src/android/app/src/main/res/values/qa_extra.xml'
+                (expected / resource).parent.mkdir(parents=True)
+                (expected / resource).write_text('locked')
+                (expected / 'src/android/raitchi-build').mkdir()
+                (expected / 'link').symlink_to(resource)
+                shutil.copytree(expected, restored, symlinks=True)
+                if case == 'extra':
+                    (restored / extra).write_text('unexpected')
+                elif case == 'missing':
+                    (restored / resource).unlink()
+                elif case == 'modified':
+                    (restored / resource).write_text('changed')
+                elif case == 'file_link':
+                    (restored / resource).unlink()
+                    (restored / resource).symlink_to(expected / resource)
+                elif case == 'directory_link':
+                    shutil.rmtree(restored / 'src/android/app')
+                    (restored / 'src/android/app').symlink_to(expected / 'src/android/app')
+                elif case == 'broken_extra_link':
+                    (restored / 'extra').symlink_to('missing')
+                elif case == 'changed_link':
+                    (restored / 'link').unlink()
+                    (restored / 'link').symlink_to('missing')
+                elif case == 'link_as_file':
+                    (restored / 'link').unlink()
+                    (restored / 'link').write_text('locked')
+                elif case == 'fifo':
+                    os.mkfifo(restored / 'extra')
+                elif case == 'outputs':
+                    for name in ('src/android/.gradle/cache',
+                                 'src/android/raitchi-build/.gradle/cache',
+                                 'src/android/local.properties'):
+                        path = restored / name
+                        path.parent.mkdir(parents=True, exist_ok=True)
+                        path.write_text('generated')
+                elif case == 'nested_build':
+                    path = restored / 'src/android/app/src/main/build/extra.xml'
+                    path.parent.mkdir(parents=True)
+                    path.write_text('not an output')
+                elif case == 'output_link':
+                    (restored / 'src/android/.gradle').symlink_to(expected, target_is_directory=True)
+                lock = {'path': 'unused', 'commit': 'a' * 40}
+                (root / 'shell.lock.json').write_text(json.dumps(lock))
+                (root / 'shell-overlay.json').write_text(json.dumps({
+                    'upstream_commit': 'a' * 40, 'deleted_upstream_files': []}))
+
+                def reconstruct(command, **kwargs):
+                    shutil.copytree(expected, Path(command[-1]), symlinks=True)
+
+                # No actual native receipt or Gradle is available: reaching this boundary
+                # is the clean-tree success sentinel, never a successful Android build.
+                with patch.object(builder, 'ROOT', root / 'engine'), \
+                     patch.object(builder, 'BUILD', root / 'build'), \
+                     patch.object(builder, 'SHELL_LOCK', root / 'shell.lock.json'), \
+                     patch.object(builder, 'run', side_effect=reconstruct) as run, \
+                     patch.object(builder.engine, 'verify_native',
+                                  side_effect=RuntimeError('native-build.json sentinel')) as native, \
+                     patch.object(sys, 'argv', ['build_eden_shell.py', '--shell', str(restored),
+                                               '--sdk', str(root), '--unsigned', '--build', '--jobs', '2']):
+                    if case in ('clean', 'outputs'):
+                        with self.assertRaisesRegex(RuntimeError, 'native-build.json sentinel'):
+                            builder.main()
+                        native.assert_called_once()
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, 'Archive shell differs'):
+                            builder.main()
+                        native.assert_not_called()
+                    self.assertEqual(run.call_count, 1)  # reconstruction only, never Gradle
