@@ -10,6 +10,42 @@ sys.path.insert(0, str(TOOLS))
 
 
 class ArchiveStaging(unittest.TestCase):
+    def test_generated_readme_separates_standard_apk_from_experimental_toolkit(self):
+        import io
+        import tarfile
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        spec = importlib.util.spec_from_file_location('deps', TOOLS.parents[1] / 'tools/deps.py')
+        deps = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(deps)
+        empty = io.BytesIO()
+        with tarfile.open(fileobj=empty, mode='w'):
+            pass
+        with tempfile.TemporaryDirectory() as directory:
+            archive = Path(directory) / 'source.tar.gz'
+            with patch.object(deps, 'parse', return_value={'dep': {}, 'unused': {}}), \
+                 patch.object(deps.subprocess, 'run', side_effect=[
+                     SimpleNamespace(stdout=empty.getvalue()), SimpleNamespace(stdout='0')]):
+                # Source-lock extraction requires actual entries; retain the real lock IDs.
+                entries = {s['id']: {'url': 'https://example.invalid/source.tar.gz'}
+                           for lock in ('sources.lock.json', 'echoes-source.lock.json')
+                           for s in __import__('json').loads((deps.ENGINE / lock).read_text())['sources']}
+                with patch.object(deps, 'parse', return_value={'dep': entries, 'unused': {}}):
+                    for entry in entries.values():
+                        entry['source'] = 'no'
+                    deps.source_tarball(SimpleNamespace(out=str(archive), version='test', dir=directory))
+            with tarfile.open(archive) as stream:
+                readme = stream.extractfile('AC-NativeNX-test/SOURCE-README.md').read().decode()
+        standard, experimental = readme.split('## Experimental on-device toolkit')
+        self.assertIn('## Standard unsigned APK (no Git required)', standard)
+        self.assertNotIn('prepare_shared_ondevice.py --fetch --build', standard)
+        self.assertIn('CAPSTONE_ARM64_SUPPORT=ON', standard)
+        self.assertLess(standard.index('CAPSTONE_ARM64_SUPPORT=ON'), standard.index('build_shared_android.py --build'))
+        for requirement in ('android-36', '36.0.0', '3.31.6', '27.2.12479018', 'JDK 17', 'set -eu'):
+            self.assertIn(requirement, standard)
+        self.assertIn('prepare.json', experimental)
+        self.assertNotIn('|| true', readme)
+
     def test_real_distribution_stages_without_git(self):
         import os
         import subprocess
