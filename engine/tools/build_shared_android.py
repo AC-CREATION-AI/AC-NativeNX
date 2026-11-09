@@ -128,6 +128,8 @@ def dependencies(sdk, native_blocks=False):
     tag = sdl.parent.parent.parent.name
     cached = LAS / "build/android/cxx/RelWithDebInfo" / tag / "arm64-v8a/_deps"
     include = cached / "adrenotools-src/include"
+    if not (LAS / '.git').exists():
+        include = LAS / 'build/android/archive-adrenotools/include'
     adreno = cached / "adrenotools-build/libadrenotools.a"
     namespace = cached / "adrenotools-build/lib/linkernsbypass/liblinkernsbypass.a"
     shaderc = deps / "lib/libshaderc_combined.a"
