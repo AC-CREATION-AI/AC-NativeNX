@@ -25,9 +25,14 @@ enforces this in CI (`.github/workflows/guard.yml`); do not weaken it.
 Also:
 
 - **No PR, issue or push to upstreams** (`igawa6/Raitchi`, Eden, yuzu). This is an autonomous fork.
+  Make the target explicit every time: run `gh repo set-default AC-CREATION-AI/AC-NativeNX` once in
+  each clone, and always pass `--repo AC-CREATION-AI/AC-NativeNX` to `gh pr`, `gh issue` and
+  `gh api`. `gh` resolves the target from the git remotes and prefers `upstream` when the clone has
+  one, which is how a PR once reached an upstream by accident. Check `git remote -v` before pushing.
 - **GPL-3.0-or-later**: keep `COPYING`, `NOTICE.md` and every copyright line. Credit igawa6, yuzu
   and Eden. Do not paste code from incompatible licenses.
-- **Do not merge your own PR.** Open it as a draft; a different identity reviews it.
+- **Do not merge your own PR.** Open it as a draft; a different identity reviews it. `main` is
+  protected: changes land through a PR with green CI (squash or rebase, linear history).
 - **Never claim "tested on device"** unless a human or a named device tester gave you a
   device report (device, SoC/GPU, driver, build SHA). Automated tests are not device tests.
 - **No secrets** in commits, logs or PRs.
