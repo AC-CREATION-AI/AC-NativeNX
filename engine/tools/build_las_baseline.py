@@ -76,6 +76,37 @@ def main():
         "add_subdirectory(${ROOT}/build/android/SDL3 ${CMAKE_BINARY_DIR}/SDL3)\n"
         'target_link_options(SDL3-shared PRIVATE "-Wl,-z,max-page-size=16384")',
     )
+    if archived:
+        import archive_sources
+        import deps
+        entries = deps.parse()['dep']
+        download = ROOT.parent / 'deps/dl'
+        def locked(name):
+            entry = entries[name]
+            archive = download / deps.filename(entry)
+            if deps.sha256(archive) != entry['sha256']:
+                raise RuntimeError('Dependency archive differs: ' + name)
+            return archive
+        cache = WORK / 'build/android/src'
+        cache.mkdir(parents=True, exist_ok=True)
+        names = {'sdl3': 'SDL3-3.4.18.tar.gz', 'ffmpeg': 'ffmpeg-9.0.2.tar.xz',
+                 'shaderc': 'shaderc-2026.3.tar.gz', 'vulkan-headers': 'Vulkan-Headers-1.4.350.1.tar.gz',
+                 'vma': 'VulkanMemoryAllocator-3.3.0.tar.gz', 'volk': 'volk-1.4.350.1.tar.gz'}
+        for name, filename in names.items():
+            shutil.copyfile(locked(name), cache / filename)
+        recipe = WORK / 'tools/android/build_deps.sh'
+        command = '(cd "$W/shaderc" && python3 utils/git-sync-deps)'
+        replacement = '\n'.join(
+            f'mkdir -p "$W/shaderc/third_party/{folder}" && tar -xf "{locked(name)}" -C "$W/shaderc/third_party/{folder}" --strip-components=1'
+            for name, folder in [('glslang', 'glslang'), ('spirv-tools', 'spirv-tools'), ('spirv-headers', 'spirv-headers')])
+        replace_once(recipe, command, replacement)
+        adreno = WORK / 'build/android/archive-adrenotools'
+        if not adreno.exists():
+            archive_sources.extract(locked('libadrenotools'), adreno)
+            archive_sources.extract(locked('liblinkernsbypass'), adreno / 'lib/linkernsbypass')
+        cmake = WORK / 'android/app/CMakeLists.txt'
+        replace_once(cmake, 'include(FetchContent)',
+                     'include(FetchContent)\nset(FETCHCONTENT_SOURCE_DIR_ADRENOTOOLS "' + str(adreno) + '")')
     sdk = args.sdk.resolve()
     (WORK / "android/local.properties").write_text(f"sdk.dir={sdk}\ncmake.dir={sdk}/cmake/3.31.6\n")
     evidence = ROOT / "evidence"
