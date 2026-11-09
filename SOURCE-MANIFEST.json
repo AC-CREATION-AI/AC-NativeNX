@@ -2624,8 +2624,8 @@
     },
     {
       "file": "engine/tools/build_las_baseline.py",
-      "sha256": "1e398fdf77042e7686126ccb6772ec281c623df31291251b2875b899e0e5d4e1",
-      "bytes": 4986
+      "sha256": "251972869d7a53dc362bf81b4fa6fbcad29c91bdbbf3206625e9f3944ec6b3ca",
+      "bytes": 6006
     },
     {
       "file": "engine/tools/build_letsgo_android.py",
@@ -3564,8 +3564,8 @@
     },
     {
       "file": "engine/tools/verify_sources.py",
-      "sha256": "940353475d09cb2d6dbd2f4a9e3bac8c7160df632e3f843e22509de04b3f41e2",
-      "bytes": 1653
+      "sha256": "7ce841938f519516a6ac0bd8c12b44f67184f248d3902dbd3be1953101c033ef",
+      "bytes": 4657
     },
     {
       "file": "shell/.ci/actool.sh",

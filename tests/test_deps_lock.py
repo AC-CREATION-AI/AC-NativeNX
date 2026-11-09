@@ -90,5 +90,67 @@ class DepsLock(unittest.TestCase):
                     self.assertEqual(deps.hashlib.sha256(data).hexdigest(), e["sha256"], e["name"])
 
 
+class VerifySourcesWithoutGit(unittest.TestCase):
+    """verify_sources.py --archives on a tree unpacked from a source archive: no .git anywhere."""
+    COMMIT = "0123456789abcdef0123456789abcdef01234567"
+
+    def setUp(self):
+        self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        for f in ("engine/tools/verify_sources.py", "tools/deps.py"):
+            (self.tmp / f).parent.mkdir(parents=True, exist_ok=True)
+            (self.tmp / f).write_bytes((ROOT / f).read_bytes())
+        top = self.tmp / "upstream" / f"demo-{self.COMMIT}"
+        (top / "src").mkdir(parents=True)
+        (top / "README.md").write_text("demo\n")
+        (top / "src/main.c").write_text("int main(void) { return 0; }\n")
+        self.archive = self.tmp / f"deps/dl/demo-{self.COMMIT}.tar.gz"
+        self.archive.parent.mkdir(parents=True)
+        with tarfile.open(self.archive, "w:gz") as t:
+            t.add(top, arcname=top.name)
+        url = "https://example.invalid/acme/demo"
+        (self.tmp / "deps.lock").write_text(f"dep | demo | {self.COMMIT} | MIT | yes | "
+                                            f"{deps.sha256(self.archive)} | {url}/archive/{self.COMMIT}.tar.gz\n")
+        (self.tmp / "engine/sources.lock.json").write_text(json.dumps({"schema": 1, "sources": [
+            {"id": "demo", "url": url + ".git", "path": "sources/demo", "commit": self.COMMIT}]}))
+        # As SOURCE-README.md says: tar -xzf deps/dl/<archive> -C engine/sources/demo --strip-components=1
+        with tarfile.open(self.archive) as t:
+            t.extractall(self.tmp / "unpack", filter="data")
+        (self.tmp / "engine/sources").mkdir()
+        (self.tmp / "unpack" / top.name).rename(self.tmp / "engine/sources/demo")
+
+    def verify(self, *extra):
+        env = {k: v for k, v in os.environ.items() if k != "NATIVENX_DEPS_DL"}
+        return subprocess.run([sys.executable, "tools/verify_sources.py", *extra], cwd=self.tmp / "engine",
+                              capture_output=True, text=True, env=env)
+
+    def test_unpacked_tree_verifies_without_git(self):
+        self.assertEqual(list(self.tmp.rglob(".git")), [])
+        self.assertNotEqual(self.verify().returncode, 0, "the Git mode cannot verify an unpacked tree")
+        r = self.verify("--archives")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("demo: OK (archive 0123456789ab)", r.stdout)
+
+    def test_altered_archive_is_refused(self):
+        with open(self.archive, "ab") as f:
+            f.write(b"\0")
+        r = self.verify("--archives")
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertIn("archive sha256 differs from deps.lock", r.stdout)
+
+    def test_modified_or_missing_unpacked_file_is_refused(self):
+        (self.tmp / "engine/sources/demo/src/main.c").write_text("int main(void) { return 1; }\n")
+        (self.tmp / "engine/sources/demo/README.md").unlink()
+        r = self.verify("--archives")
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertIn("2 archived file(s) missing or modified under sources/demo", r.stdout)
+
+    def test_lock_and_deps_lock_must_name_the_same_commit(self):
+        lock = self.tmp / "engine/sources.lock.json"
+        lock.write_text(lock.read_text().replace(self.COMMIT, "f" * 40))
+        r = self.verify("--archives")
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertIn("deps.lock commit differs from lock", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

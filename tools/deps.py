@@ -221,8 +221,25 @@ def source_tarball(args):
                "Rebuild (Linux x86_64, JDK 17, Android SDK/NDK r27c, see engine/docs/BUILDING.md and",
                "`.github/workflows/build.yml`): unpack the pinned repositories where `engine/tools/fetch_sources.py`",
                "and `engine/tools/restore_shell_overlay.py` would clone them, or let them fetch the same commits;",
-               "the archives under deps/dl/ are the exact files the build downloads.", ""]
-    git = subprocess.run(["git", "-C", str(ROOT), "archive", "--format=tar", f"--prefix={top}/", "HEAD"],
+               "the archives under deps/dl/ are the exact files the build downloads.", "",
+               "## Verify the pinned sources without Git", "",
+               "This archive has no `.git` directory. From its top directory, unpack each pinned repository at the",
+               "path of its source lock (`engine/sources.lock.json`, `engine/echoes-source.lock.json`), then verify:",
+               "", "```sh"]
+    for lock in ("sources.lock.json", "echoes-source.lock.json"):
+        for s in json.loads((ENGINE / lock).read_text(encoding="utf-8"))["sources"]:
+            readme += [f"mkdir -p engine/{s['path']} && tar -xzf deps/dl/{filename(deps[s['id']])} "
+                       f"-C engine/{s['path']} --strip-components=1"]
+    readme += ["cd engine",
+               "python3 tools/verify_sources.py --archives",
+               "python3 tools/verify_sources.py --archives --lock echoes-source.lock.json", "```", "",
+               "`--archives` checks each archive's sha256 against `deps.lock`, the `deps.lock` entry against the",
+               "source lock's commit and URL, and every archived file against the unpacked tree (exit 0 = OK).",
+               "`engine/tools/build_las_baseline.py` uses this mode by itself when `engine/sources/las-android` has",
+               "no `.git`. The later stages (`prepare_shared_ondevice.py`, `build_shared_android.py`,",
+               "`restore_shell_overlay.py`, `build_eden_shell.py`) still read Git checkouts of the same commits,",
+               "made by `engine/tools/fetch_sources.py` (into empty source paths) and `restore_shell_overlay.py`.", ""]
+    git =subprocess.run(["git", "-C", str(ROOT), "archive", "--format=tar", f"--prefix={top}/", "HEAD"],
                          check=True, capture_output=True).stdout
     mtime = int(subprocess.run(["git", "-C", str(ROOT), "log", "-1", "--format=%ct"], check=True,
                                capture_output=True, text=True).stdout.strip())
