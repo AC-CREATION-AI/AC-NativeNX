@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Prepare an isolated, stock-clock LAS Android reference; build only on request."""
 import argparse
+import difflib
+import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,6 +29,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deps", action="store_true", help="Fetch and build pinned native dependencies")
     parser.add_argument("--apk", action="store_true", help="Build the separate .test launcher APK (no game code)")
+    parser.add_argument("--native-only", action="store_true", help="Build SDL/AdrenoTools caches without packaging or signing an APK")
     parser.add_argument("--game", action="store_true", help="Build the private game library from imported LAS inputs")
     parser.add_argument("--package-game", action="store_true", help="Package an existing local game library in a private .test APK")
     parser.add_argument("--jobs", type=int, default=4)
@@ -33,14 +37,27 @@ def main():
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("--jobs must be positive")
-    run(["python3", ROOT / "tools/verify_sources.py"])
-    if not WORK.exists():
-        WORK.parent.mkdir(parents=True, exist_ok=True)
-        run(["git", "clone", "--shared", ROOT / "sources/las-android", WORK])
-    original = run(["git", "-C", ROOT / "sources/las-android", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-    actual = run(["git", "-C", WORK, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-    if original != actual:
-        raise RuntimeError("Baseline working tree no longer uses the pinned source")
+    source = ROOT / "sources/las-android"
+    # No .git: unpacked from the corresponding source archive (SOURCE-README.md), verified against deps.lock.
+    archived = not (source / ".git").exists()
+    run(["python3", ROOT / "tools/verify_sources.py", *(["--archives"] if archived else [])])
+    if archived:
+        pinned = next(s["commit"] for s in json.loads((ROOT / "sources.lock.json").read_text())["sources"]
+                      if s["id"] == "las-android")
+        marker = WORK / ".las-baseline-commit"
+        if not WORK.exists():
+            shutil.copytree(source, WORK, symlinks=True)
+            marker.write_text(pinned + "\n")
+        if not marker.is_file() or marker.read_text().strip() != pinned:
+            raise RuntimeError("Baseline working tree no longer uses the pinned source")
+    else:
+        if not WORK.exists():
+            WORK.parent.mkdir(parents=True, exist_ok=True)
+            run(["git", "clone", "--shared", source, WORK])
+        original = run(["git", "-C", source, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+        actual = run(["git", "-C", WORK, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+        if original != actual:
+            raise RuntimeError("Baseline working tree no longer uses the pinned source")
     replace_once(
         WORK / "android/app/src/main/java/com/lasrecomp/android/RootBoost.java",
         'return p.getBoolean("root_boost", true) && hasSu();',
@@ -59,11 +76,46 @@ def main():
         "add_subdirectory(${ROOT}/build/android/SDL3 ${CMAKE_BINARY_DIR}/SDL3)\n"
         'target_link_options(SDL3-shared PRIVATE "-Wl,-z,max-page-size=16384")',
     )
+    if archived:
+        import archive_sources
+        import deps
+        entries = deps.parse()['dep']
+        download = ROOT.parent / 'deps/dl'
+        def locked(name):
+            entry = entries[name]
+            archive = download / deps.filename(entry)
+            if deps.sha256(archive) != entry['sha256']:
+                raise RuntimeError('Dependency archive differs: ' + name)
+            return archive
+        cache = WORK / 'build/android/src'
+        cache.mkdir(parents=True, exist_ok=True)
+        names = {'sdl3': 'SDL3-3.4.18.tar.gz', 'ffmpeg': 'ffmpeg-9.0.2.tar.xz',
+                 'shaderc': 'shaderc-2026.3.tar.gz', 'vulkan-headers': 'Vulkan-Headers-1.4.350.1.tar.gz',
+                 'vma': 'VulkanMemoryAllocator-3.3.0.tar.gz', 'volk': 'volk-1.4.350.1.tar.gz'}
+        for name, filename in names.items():
+            shutil.copyfile(locked(name), cache / filename)
+        recipe = WORK / 'tools/android/build_deps.sh'
+        command = '(cd "$W/shaderc" && python3 utils/git-sync-deps)'
+        replacement = '\n'.join(
+            f'mkdir -p "$W/shaderc/third_party/{folder}" && tar -xf "{locked(name)}" -C "$W/shaderc/third_party/{folder}" --strip-components=1'
+            for name, folder in [('glslang', 'glslang'), ('spirv-tools', 'spirv-tools'), ('spirv-headers', 'spirv-headers')])
+        replace_once(recipe, command, replacement)
+        adreno = WORK / 'build/android/archive-adrenotools'
+        if not adreno.exists():
+            archive_sources.extract(locked('libadrenotools'), adreno)
+            archive_sources.extract(locked('liblinkernsbypass'), adreno / 'lib/linkernsbypass')
+        cmake = WORK / 'android/app/CMakeLists.txt'
+        replace_once(cmake, 'include(FetchContent)',
+                     'include(FetchContent)\nset(FETCHCONTENT_SOURCE_DIR_ADRENOTOOLS "' + str(adreno) + '")')
     sdk = args.sdk.resolve()
     (WORK / "android/local.properties").write_text(f"sdk.dir={sdk}\ncmake.dir={sdk}/cmake/3.31.6\n")
     evidence = ROOT / "evidence"
     evidence.mkdir(exist_ok=True)
-    patch = run(["git", "-C", WORK, "diff", "--", "android/app/src/main/java/com/lasrecomp/android/RootBoost.java", "android/app/CMakeLists.txt", "tools/android/build_deps.sh", "tools/android/build_game.sh"], capture_output=True, text=True).stdout
+    patched = ["android/app/src/main/java/com/lasrecomp/android/RootBoost.java", "android/app/CMakeLists.txt", "tools/android/build_deps.sh", "tools/android/build_game.sh"]
+    if archived:
+        patch = "".join("".join(difflib.unified_diff((source / f).read_text().splitlines(True), (WORK / f).read_text().splitlines(True), f"a/{f}", f"b/{f}")) for f in patched)
+    else:
+        patch = run(["git", "-C", WORK, "diff", "--", *patched], capture_output=True, text=True).stdout
     (evidence / "las-baseline.patch").write_text(patch)
     env = dict(os.environ)
     env.update(ANDROID_HOME=str(sdk), ANDROID_SDK_ROOT=str(sdk),
@@ -73,8 +125,9 @@ def main():
     env["PATH"] = f"{sdk}/cmake/3.31.6/bin:{env['JAVA_HOME']}/bin:{env.get('PATH', '')}"
     if args.deps:
         run(["bash", "tools/android/build_deps.sh"], cwd=WORK, env=env)
-    if args.apk:
-        run(["./gradlew", ":app:assembleDebug", "-PlasTestId", "--no-daemon", f"--max-workers={args.jobs}"], cwd=WORK / "android", env=env)
+    if args.apk or args.native_only:
+        task = ':app:externalNativeBuildDebug' if args.native_only else ':app:assembleDebug'
+        run(["./gradlew", task, "-PlasTestId", "--no-daemon", f"--max-workers={args.jobs}"], cwd=WORK / "android", env=env)
     if args.game:
         inputs = ROOT / "private/las-baseline/extracted"
         if not (inputs / "exefs/main").is_file():

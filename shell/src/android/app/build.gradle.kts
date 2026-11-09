@@ -33,8 +33,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
+    val unsignedBuild = providers.gradleProperty("raitchiUnsigned").orNull == "true"
     signingConfigs {
-        create("raitchiTest") {
+        if (!unsignedBuild) create("raitchiTest") {
             storeFile = file(providers.environmentVariable("RAITCHI_TEST_KEYSTORE").get())
             storePassword = providers.environmentVariable("RAITCHI_TEST_PASSWORD").get()
             keyAlias = "raitchi-test"
@@ -45,9 +46,9 @@ android {
         }
     }
     buildTypes {
-        getByName("debug") { signingConfig = signingConfigs.getByName("raitchiTest") }
+        getByName("debug") { signingConfig = if (unsignedBuild) null else signingConfigs.getByName("raitchiTest") }
         getByName("release") {
-            signingConfig = signingConfigs.getByName("raitchiTest")
+            signingConfig = if (unsignedBuild) null else signingConfigs.getByName("raitchiTest")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "raitchi-proguard-rules.pro")

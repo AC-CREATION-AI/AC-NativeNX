@@ -25,6 +25,7 @@ def main():
     parser.add_argument('--manifest', required=True, type=Path)
     parser.add_argument('--destination', required=True, type=Path)
     parser.add_argument('--clone-source', help='Optional local Git cache instead of upstream URL')
+    parser.add_argument('--archives', action='store_true', help='Restore from the locked Eden archive, without Git')
     args = parser.parse_args()
     snapshot = args.snapshot.resolve(strict=True)
     manifest = json.loads(args.manifest.read_text())
@@ -39,9 +40,20 @@ def main():
         safe(destination, relative)
     def git(*words):
         return subprocess.run(['git', *map(str, words)], check=True, capture_output=True, text=True).stdout.strip()
-    git('clone', '--no-checkout', '--no-hardlinks', args.clone_source or manifest['upstream_url'], destination)
-    git('-C', destination, 'checkout', '--detach', manifest['upstream_commit'])
-    git('-C', destination, 'remote', 'set-url', 'origin', manifest['upstream_url'])
+    if args.archives:
+        import archive_sources
+        import deps
+        entry = deps.parse()['dep']['eden']
+        if entry['version'] != manifest['upstream_commit'] or entry['url'] != manifest['upstream_url'].removesuffix('.git') + '/archive/' + manifest['upstream_commit'] + '.tar.gz':
+            raise RuntimeError('Eden archive differs from overlay base')
+        archive = Path(__file__).resolve().parents[2] / 'deps/dl' / deps.filename(entry)
+        if deps.sha256(archive) != entry['sha256']:
+            raise RuntimeError('Eden archive SHA256 differs from deps.lock')
+        archive_sources.extract(archive, destination)
+    else:
+        git('clone', '--no-checkout', '--no-hardlinks', args.clone_source or manifest['upstream_url'], destination)
+        git('-C', destination, 'checkout', '--detach', manifest['upstream_commit'])
+        git('-C', destination, 'remote', 'set-url', 'origin', manifest['upstream_url'])
     for relative in manifest['deleted_upstream_files']:
         target = safe(destination, relative)
         if target.is_file() or target.is_symlink():
@@ -52,13 +64,14 @@ def main():
             target.unlink()
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(safe(snapshot, row['file']), target)
-    git('-C', destination, 'merge-base', '--is-ancestor', manifest['upstream_commit'], 'HEAD')
+    if not args.archives:
+        git('-C', destination, 'merge-base', '--is-ancestor', manifest['upstream_commit'], 'HEAD')
     for row in manifest['files']:
         if digest(safe(destination, row['file'])) != row['sha256']:
             raise RuntimeError('Restored file differs: ' + row['file'])
-    print(json.dumps({'head':git('-C', destination, 'rev-parse', 'HEAD'),
+    print(json.dumps({'head':manifest['upstream_commit'] if args.archives else git('-C', destination, 'rev-parse', 'HEAD'),
                       'overlay_files_verified':len(manifest['files']),
-                      'upstream_history_preserved':True, 'committed':False,
+                      'upstream_history_preserved':not args.archives, 'committed':False,
                       'build_tested':False, 'build_requires_allow_unpinned_shell':True}, indent=2))
 
 

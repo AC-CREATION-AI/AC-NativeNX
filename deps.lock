@@ -1,0 +1,102 @@
+# deps.lock — every third-party input of the AC-NativeNX APK, pinned (model: letsgo-recomp-android's deps.lock).
+#
+# Read by tools/deps.py (CI `build` workflow) and tests/test_deps_lock.py. Fields are separated by `|` (spaces around
+# them are ignored). Lines starting with `#` are comments. Every line has 7 fields:
+#
+#   kind | name | version | license (SPDX) | in source tarball (yes/no) | sha256 | url
+#
+#   dep    Source compiled into, or file packaged in, the default APK (no --with-ondevice, no --with-native-blocks).
+#          Downloaded from its upstream and checked against sha256; "yes" = the archive is copied unmodified into
+#          AC-NativeNX-<ver>-source.tar.gz (deps/dl/), which therefore holds the complete corresponding source.
+#   unused Downloaded by a pinned upstream build script but neither compiled into nor shipped in the APK. Listed so
+#          that every download of the build is accounted for; never fetched by tools/deps.py.
+#   cpm    An entry of shell/cpmfile.json (Eden's C++ dependencies). NOT BUILT: the Android build of the CI
+#          (engine/tools/build_eden_shell.py, Gradle project shell/src/android/raitchi-build) has no
+#          externalNativeBuild, so neither Eden's C++ core nor any CPM package is compiled, and build_eden_shell.py
+#          refuses an APK whose native libraries differ from the engine's ("Eden core must not be packaged").
+#          This includes the `"ci": true` entries (ffmpeg-ci, openssl-ci, sdl3-ci: prebuilt binaries of crueter-ci;
+#          sirit-ci). Version and repository only; tests/test_deps_lock.py keeps this list equal to cpmfile.json and
+#          fails if the Android build starts compiling native shell code.
+#
+# Not covered here: the Android SDK/NDK and Gradle toolchain (installed by sdkmanager / Gradle, which check their own
+# downloads), and the Maven libraries of shell/src/android/app/build.gradle.kts (androidx, Material, Kotlin, OkHttp,
+# Coil, Jackson, commonmark...; Apache-2.0 / MIT / BSD binaries resolved by Gradle).
+#
+# Versions are the ones the build uses: engine/sources.lock.json, engine/echoes-source.lock.json,
+# engine/shell.lock.json (Eden base), LAS Android's tools/android/build_deps.sh and android/app/CMakeLists.txt at the
+# pinned las-android commit, engine/tools/build_letsgo_ffmpeg.py, engine/tools/prepare_shared_ondevice.py, and
+# shaderc v2026.3's DEPS file. `tools/deps.py check` verifies each of these against this file.
+
+# --- pinned source repositories (fetch_sources.py, restore_shell_overlay.py) ------------------------------------------
+dep    | las-android       | cca791a3e7218e1dac95e7d4a11b8f97dba3ea51 | MIT AND OFL-1.1 AND Bitstream-Vera | yes | 2fff7435f1c221357b4998c812b30f0b81f3f927c4f6aebca7593e272ab66c78 | https://github.com/Nycolazs/LASRecomp-Android-Plus/archive/cca791a3e7218e1dac95e7d4a11b8f97dba3ea51.tar.gz
+dep    | las-upstream      | 59b61fd3c65dcabd0feb62d5d5706240cb3f5bb9 | MIT | yes | ea5bdbef4c8f6720e723e35741ee4e9df948bb7089422c1bb79ddca031a3c73d | https://github.com/peiikai/LASRecomp/archive/59b61fd3c65dcabd0feb62d5d5706240cb3f5bb9.tar.gz
+dep    | letsgo            | 96894fd8e9ea20c1b38cdea53105ec2a335df620 | MIT | yes | eddf36c8f1669acd2f1e5495ab75dcaf8ba0df9366d18d6f05c37ba813204d17 | https://github.com/raulzrrs/letsgo-recomp/archive/96894fd8e9ea20c1b38cdea53105ec2a335df620.tar.gz
+dep    | echoes            | dd9c79d6c01d9eaddafc1fc5a07b6658bfc56505 | MIT | yes | e59393d9311abc616cbfee9f8cb174ab162b7417b4489d9e610c8282e97f05bd | https://github.com/Nycolazs/EoWRecomp/archive/dd9c79d6c01d9eaddafc1fc5a07b6658bfc56505.tar.gz
+dep    | eden              | 989768aa46720e3fcab9e2111e3ddd70819c382b | GPL-3.0-or-later AND GPL-2.0-or-later | yes | 57f8e648bfaecf367a576c1bcaaa4a44cd61dcd36e2f6a51c0c343a6742a93f2 | https://git.eden-emu.dev/eden-emu/eden/archive/989768aa46720e3fcab9e2111e3ddd70819c382b.tar.gz
+
+# --- native dependencies (LAS tools/android/build_deps.sh, android/app/CMakeLists.txt, build_letsgo_ffmpeg.py) ------
+dep    | sdl3              | 3.4.18   | Zlib                          | yes | 9c75cf16330322c217dedd2e0609f1124f1b54b8633e763467b4684d0f4334a3 | https://github.com/libsdl-org/SDL/releases/download/release-3.4.18/SDL3-3.4.18.tar.gz
+dep    | ffmpeg            | 9.0.2    | LGPL-2.1-or-later             | yes | 8c3850283eb25fa026482078a04051e0be17347b09ef81a0849bec15a96e002e | https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+dep    | shaderc           | 2026.3   | Apache-2.0                    | yes | ee493ccf1b3038b4ef2fe024664c5eb2dc4bcc1f6b05b33e3909de0e19c81024 | https://github.com/google/shaderc/archive/refs/tags/v2026.3.tar.gz
+dep    | glslang           | 168d452a4f460d24b588fed08477a81c44ee27a1 | BSD-3-Clause AND BSD-2-Clause AND MIT AND Apache-2.0 AND GPL-3.0-or-later WITH Bison-exception-2.2 | yes | c167b2474af06cbab93abae8249efaf88fb79a09f30488e2a24d399e4258ce7a | https://github.com/KhronosGroup/glslang/archive/168d452a4f460d24b588fed08477a81c44ee27a1.tar.gz
+dep    | spirv-tools       | b707790a898e44038547df54580022fc1cf89c3d | Apache-2.0 | yes | 05d8af89737bde57571c48dbd36714c9f520a69623e14de72c3be6b600e277d6 | https://github.com/KhronosGroup/SPIRV-Tools/archive/b707790a898e44038547df54580022fc1cf89c3d.tar.gz
+dep    | spirv-headers     | 29981f65241605e08b0ede4cfeb999fe3b723c6a | MIT AND CC-BY-4.0 | yes | 232899f1ad4104fb5bc377b94596c7621575eee62ad9a9e8f929b63a7dd8a7ad | https://github.com/KhronosGroup/SPIRV-Headers/archive/29981f65241605e08b0ede4cfeb999fe3b723c6a.tar.gz
+dep    | vulkan-headers    | 1.4.350.1 | Apache-2.0 OR MIT            | yes | 6d1bb65e49520344cc0a48af3dc02e993781efff14c7ebdcb8ae9fa23ddf7e83 | https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/vulkan-sdk-1.4.350.1.tar.gz
+dep    | vma               | 3.3.0    | MIT                           | yes | c4f6bbe6b5a45c2eb610ca9d231158e313086d5b1a40c9922cb42b597419b14e | https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/archive/refs/tags/v3.3.0.tar.gz
+dep    | volk              | 1.4.350.1 | MIT                          | yes | 078a9411298e4e0f60f5f5398c890783427c25a414619294ca8e69587bbd5eae | https://github.com/zeux/volk/archive/refs/tags/vulkan-sdk-1.4.350.1.tar.gz
+dep    | libadrenotools    | 8fae8ce254dfc1344527e05301e43f37dea2df80 | BSD-2-Clause | yes | ceffce971676d4cfdf348a082df06fc92a1dca6d95bea892a480d63f200961cb | https://github.com/bylaws/libadrenotools/archive/8fae8ce254dfc1344527e05301e43f37dea2df80.tar.gz
+dep    | liblinkernsbypass | aa3975893d83ef1bc84c321ec60c65fbf1287887 | BSD-2-Clause | yes | da1128c8aa771c4d24766b53a47822d0717baa5c536ca8491220402942b80638 | https://github.com/bylaws/liblinkernsbypass/archive/aa3975893d83ef1bc84c321ec60c65fbf1287887.tar.gz
+dep    | capstone          | 5.0.9    | BSD-3-Clause                  | yes | 0429af292ddc604d3c9344696807e281d5e728db029f00e6a4ea9e3bff1aac9e | https://files.pythonhosted.org/packages/39/01/6516910f546fbb996068207b9dd0229b14bc8dae223114d5e0e27d3cad11/capstone-5.0.9.tar.gz
+
+# --- downloaded by a build script, not in the APK ---------------------------------------------------------------------
+unused | turnip-k11mch1    | v24.3.0_R9v2 | MIT                       | no  | 8a781186ed96d7f9b1620ae4caa508eb121b78af4b3777f0907dada34ce6714a | https://github.com/K11MCH1/AdrenoToolsDrivers/releases/download/v24.3.0_r9/turnip_v24.3.0_R9v2.zip
+unused | abseil-cpp        | dbf88f932096c7f7714356e919f04749eb87c3e9 | Apache-2.0 | no | - | https://github.com/abseil/abseil-cpp.git (shaderc git-sync-deps; tests only)
+unused | effcee            | 910ed15722d5d05c9d71ecf36c1a22243cb79b02 | Apache-2.0 | no | - | https://github.com/google/effcee.git (shaderc git-sync-deps; tests only)
+unused | googletest        | 52eb8108c5bdec04579160ae17225d66034bd723 | BSD-3-Clause | no | - | https://github.com/google/googletest.git (shaderc git-sync-deps; tests only)
+unused | re2               | 927f5d53caf8111721e734cf24724686bb745f55 | BSD-3-Clause | no | - | https://github.com/google/re2.git (shaderc git-sync-deps; tests only)
+
+# --- shell/cpmfile.json: not built (see the header) -------------------------------------------------------------------
+cpm    | biscuit                  | v0.19.0                                  | - | no | - | https://github.com/lioncash/biscuit
+cpm    | boost                    | 1.92.0                                   | - | no | - | https://github.com/eden-emulator/ext-boost
+cpm    | boost_headers            | boost-1.91.0                             | - | no | - | https://github.com/boostorg/headers
+cpm    | catch2                   | v3.13.0                                  | - | no | - | https://github.com/catchorg/Catch2
+cpm    | cpp-jwt                  | 7f24eb4c32                               | - | no | - | https://github.com/arun11299/cpp-jwt
+cpm    | cubeb                    | fa02160712                               | - | no | - | https://github.com/mozilla/cubeb
+cpm    | discord-rpc              | 76616d8675                               | - | no | - | https://github.com/eden-emulator/discord-rpc
+cpm    | enet                     | v1.3.18                                  | - | no | - | https://github.com/lsalzman/enet
+cpm    | ffmpeg                   | c7b5f1537d                               | - | no | - | https://github.com/FFmpeg/FFmpeg
+cpm    | ffmpeg-ci                | 9.0.2-1790726865-946fcce07b              | - | no | - | https://github.com/crueter-ci/FFmpeg
+cpm    | fmt                      | 12.1.0                                   | - | no | - | https://github.com/fmtlib/fmt
+cpm    | frozen                   | 61dce5ae18                               | - | no | - | https://github.com/serge-sans-paille/frozen
+cpm    | gamemode                 | ce6fe122f3                               | - | no | - | https://github.com/FeralInteractive/gamemode
+cpm    | httplib                  | v0.46.0                                  | - | no | - | https://github.com/yhirose/cpp-httplib
+cpm    | lagoon                   | 1.0.0                                    | - | no | - | https://github.com/loongson-community/lagoon
+cpm    | libadrenotools           | 8ba23b42d7                               | - | no | - | https://github.com/eden-emulator/libadrenotools
+cpm    | libusb                   | v1.0.29                                  | - | no | - | https://github.com/libusb/libusb
+cpm    | linkernsbypass           | aa3975893d                               | - | no | - | https://github.com/bylaws/liblinkernsbypass
+cpm    | llvm-mingw               | 20250828                                 | - | no | - | https://git.eden-emu.dev/eden-emu/llvm-mingw
+cpm    | lz4                      | ebb370ca83                               | - | no | - | https://github.com/lz4/lz4
+cpm    | moltenvk                 | v1.4.1-ryujinx                           | - | no | - | https://github.com/V380-Ori/Ryujinx.MoltenVK
+cpm    | nlohmann                 | v3.12.0                                  | - | no | - | https://github.com/nlohmann/json
+cpm    | oaknut                   | v2.0.3                                   | - | no | - | https://github.com/eden-emulator/oaknut
+cpm    | openssl                  | openssl-3.6.2                            | - | no | - | https://github.com/openssl/openssl
+cpm    | openssl-ci               | 4.0.1-1788234794-b64f68a94e              | - | no | - | https://github.com/crueter-ci/OpenSSL
+cpm    | openssl-cmake            | 3.6.2                                    | - | no | - | https://github.com/jimmy-park/openssl-cmake
+cpm    | opus                     | a3f0ec02b3                               | - | no | - | https://github.com/xiph/opus
+cpm    | quazip                   | 2e95c9001b                               | - | no | - | https://github.com/stachenov/quazip
+cpm    | reshade                  | v6.8.0                                   | - | no | - | https://github.com/crosire/reshade
+cpm    | sdl3                     | release-3.4.8                            | - | no | - | https://github.com/libsdl-org/SDL
+cpm    | sdl3-ci                  | 3.4.14-1788231389-147a8ee32d             | - | no | - | https://github.com/crueter-ci/SDL3
+cpm    | simpleini                | v4.25                                    | - | no | - | https://github.com/brofield/simpleini
+cpm    | sirit                    | v1.0.5                                   | - | no | - | https://github.com/eden-emulator/sirit
+cpm    | sirit-ci                 | v1.0.7                                   | - | no | - | https://github.com/eden-emulator/sirit
+cpm    | spirv-headers            | vulkan-sdk-1.4.341.0                     | - | no | - | https://github.com/KhronosGroup/SPIRV-Headers
+cpm    | tzdb                     | 230326                                   | - | no | - | https://git.eden-emu.dev/eden-emu/tzdb_to_nx
+cpm    | vulkan-headers           | v1.4.345                                 | - | no | - | https://github.com/KhronosGroup/Vulkan-Headers
+cpm    | vulkan-memory-allocator  | v3.3.0                                   | - | no | - | https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+cpm    | vulkan-utility-libraries | v1.4.345                                 | - | no | - | https://github.com/KhronosGroup/Vulkan-Utility-Libraries
+cpm    | vulkan-validation-layers | vulkan-sdk-1.4.341.0                     | - | no | - | https://github.com/KhronosGroup/Vulkan-ValidationLayers
+cpm    | xbyak                    | v7.40.1                                  | - | no | - | https://github.com/herumi/xbyak
+cpm    | zbic                     | 11b08f2712264bbed731545085cbd9702096ceb7 | - | no | - | https://github.com/kinnay/zbic
+cpm    | zlib                     | v1.3.2                                   | - | no | - | https://github.com/madler/zlib
+cpm    | zstd                     | b8d6101fba                               | - | no | - | https://github.com/facebook/zstd

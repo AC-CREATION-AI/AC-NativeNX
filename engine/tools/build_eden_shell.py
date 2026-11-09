@@ -9,7 +9,9 @@ from pathlib import Path
 import re
 import secrets
 import shutil
+import stat
 import subprocess
+import sys
 import zipfile
 
 import package_shared_android as engine
@@ -106,11 +108,11 @@ def notice_inventory(names, engine_notices, shell_notices):
                   or re.match(r"(LICENSE|OFL|COPYING|NOTICE)", n))
 
 
-def inspect_apk(apk, sdk, reports, assets, shell):
+def inspect_apk(apk, sdk, reports, assets, shell, unsigned=False):
     alignment = engine.verify_apk_alignment(apk, sdk)
     build_tools = sdk / "build-tools/36.0.0"
-    signature = run([build_tools / "apksigner", "verify", "--verbose", "--print-certs", apk],
-                    capture_output=True).stdout
+    signature = 'unsigned (explicit --unsigned build)' if unsigned else run(
+        [build_tools / "apksigner", "verify", "--verbose", "--print-certs", apk], capture_output=True).stdout
     badging = run([build_tools / "aapt", "dump", "badging", apk], capture_output=True).stdout
     if f"package: name='{PACKAGE}'" not in badging or LAUNCHER not in badging:
         raise RuntimeError("Unexpected shell package or launcher")
@@ -170,6 +172,44 @@ def inspect_apk(apk, sdk, reports, assets, shell):
             "device_installed": False}
 
 
+def verify_archive_shell(expected, shell):
+    """Compare all entries without following links, not just known source files."""
+    # Gradle caches and SDK configuration are the only in-tree outputs. Module
+    # build outputs live outside the shell (raitchi-build/build.gradle.kts).
+    output_directories = {'src/android/.gradle', 'src/android/raitchi-build/.gradle'}
+    output_files = {'src/android/local.properties'}
+
+    def inventory(root, allow_outputs=False):
+        entries = {}
+
+        def visit(directory):
+            for path in sorted(directory.iterdir()):
+                name = path.relative_to(root).as_posix()
+                mode = path.lstat().st_mode
+                if stat.S_ISLNK(mode):
+                    value = ('link', os.readlink(path))
+                elif stat.S_ISDIR(mode):
+                    if allow_outputs and name in output_directories:
+                        continue
+                    value = ('directory',)
+                    visit(path)
+                elif stat.S_ISREG(mode):
+                    if allow_outputs and name in output_files:
+                        continue
+                    value = ('file', sha(path))
+                else:
+                    raise RuntimeError('Archive shell differs: unsupported entry ' + name)
+                entries[name] = value
+        visit(root)
+        return entries
+
+    wanted = inventory(expected)
+    actual = inventory(shell, allow_outputs=True)
+    for name in sorted(wanted.keys() | actual.keys()):
+        if wanted.get(name) != actual.get(name):
+            raise RuntimeError('Archive shell differs: ' + name)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     lock = json.loads(SHELL_LOCK.read_text())
@@ -178,6 +218,7 @@ def main():
                         help="Build a shell checkout whose HEAD differs from shell.lock.json (development only)")
     parser.add_argument("--sdk", type=Path, default=Path.home() / "android-sdk")
     parser.add_argument("--build", action="store_true")
+    parser.add_argument("--unsigned", action="store_true", help="Do not create or use signing material")
     parser.add_argument("--allow-downloads", action="store_true")
     parser.add_argument("--with-ondevice", action="store_true", help="Optional legacy compiler payload; omitted by default")
     parser.add_argument("--variant", choices=("debug", "release", "both"), default="both")
@@ -185,9 +226,25 @@ def main():
     args = parser.parse_args()
     shell, sdk = args.shell.resolve(strict=True), args.sdk.resolve(strict=True)
     BUILD.mkdir(parents=True, exist_ok=True)
-    base = run(["git", "-C", shell, "rev-parse", EDEN_BASE], capture_output=True).stdout.strip()
-    run(["git", "-C", shell, "merge-base", "--is-ancestor", base, "HEAD"])
-    head = run(["git", "-C", shell, "rev-parse", "HEAD"], capture_output=True).stdout.strip()
+    if not (shell / ".git").exists():
+        import tempfile
+        import restore_shell_overlay
+        manifest_path = ROOT.parent / 'shell-overlay.json'
+        manifest = json.loads(manifest_path.read_text())
+        # Independently reconstruct the expected tree from the hash-locked archive and overlay.
+        with tempfile.TemporaryDirectory() as temporary:
+            expected = Path(temporary) / 'shell'
+            run([sys.executable, Path(restore_shell_overlay.__file__), '--archives',
+                 '--snapshot', ROOT.parent / 'shell', '--manifest', manifest_path,
+                 '--destination', expected])
+            verify_archive_shell(expected, shell)
+            if any((shell / name).exists() for name in manifest['deleted_upstream_files']):
+                raise RuntimeError('Deleted upstream shell file restored')
+        base = head = manifest['upstream_commit']
+    else:
+        base = run(["git", "-C", shell, "rev-parse", EDEN_BASE], capture_output=True).stdout.strip()
+        run(["git", "-C", shell, "merge-base", "--is-ancestor", base, "HEAD"])
+        head = run(["git", "-C", shell, "rev-parse", "HEAD"], capture_output=True).stdout.strip()
     pinned = lock["commit"]
     if re.fullmatch(r"[0-9a-f]{40}", pinned) and head != pinned and not args.allow_unpinned_shell:
         raise RuntimeError(f"Shell HEAD {head[:12]} differs from shell.lock.json {pinned[:12]}")
@@ -222,13 +279,15 @@ def main():
     java = Path(os.environ.get("JAVA_HOME", "/usr/lib/jvm/java-17-openjdk"))
     env = dict(os.environ, JAVA_HOME=str(java), ANDROID_HOME=str(sdk), ANDROID_SDK_ROOT=str(sdk))
     env["PATH"] = str(java / "bin") + ":" + env.get("PATH", "")
-    receipt["signing"] = test_signing(env)
+    receipt["signing"] = {"identity": "unsigned"} if args.unsigned else test_signing(env)
     variants = ("debug", "release") if args.variant == "both" else (args.variant,)
     command = [shell / "src/android/gradlew", "-p", shell / "src/android/raitchi-build"]
     for variant in variants:
         command += [":app:assemble" + variant.title(), ":app:lint" + variant.title()]
     command.append(":app:testDebugUnitTest")
     command += ["--no-daemon", "--max-workers=" + str(args.jobs), "-PraitchiWorkspace=" + str(ROOT)]
+    if args.unsigned:
+        command.append('-PraitchiUnsigned=true')
     if not args.allow_downloads:
         command.append("--offline")
     with (BUILD / "build.log").open("w") as log:
@@ -237,10 +296,11 @@ def main():
         raise RuntimeError("Shell/engine Java sources changed during build; rerun after edits finish")
     receipt["variants"] = {}
     for variant in variants:
-        source = BUILD / f"gradle/app/outputs/apk/{variant}/app-{variant}.apk"
+        suffix = '-unsigned' if args.unsigned and variant == 'release' else ''
+        source = BUILD / f"gradle/app/outputs/apk/{variant}/app-{variant}{suffix}.apk"
         apk = BUILD / f"raitchi-eden-app-{variant}.apk"
         shutil.copy2(source, apk)
-        receipt["variants"][variant] = inspect_apk(apk, sdk, reports, stage["asset_sha256"], shell)
+        receipt["variants"][variant] = inspect_apk(apk, sdk, reports, stage["asset_sha256"], shell, args.unsigned)
         (BUILD / f"notices-{variant}.txt").write_text("".join(
             "assets/" + n + "\n" for n in receipt["variants"][variant]["notices"]))
         if variant == "release":

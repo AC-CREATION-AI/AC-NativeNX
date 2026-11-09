@@ -43,7 +43,8 @@ def write_changed(path, content):
 
 
 def stage():
-    subprocess.run([sys.executable, str(ROOT / "tools/verify_sources.py")], check=True)
+    import archive_sources
+    archive_sources.verify_locks()
     lock = json.loads((ROOT / "sources.lock.json").read_text())
     pinned = next(x for x in lock["sources"] if x["id"] == "las-android")
     source = ROOT / pinned["path"]
@@ -62,15 +63,18 @@ def stage():
     temporary.mkdir()
     try:
         # Exact committed source, excluding ignored/untracked files and Git metadata; no repository build script runs.
-        process = subprocess.Popen(["git", "-C", str(source), "archive", "--format=tar", pinned["commit"]],
-                                   stdout=subprocess.PIPE)
-        try:
-            with tarfile.open(fileobj=process.stdout, mode="r|") as archive:
-                archive.extractall(temporary, filter="data")
-        finally:
-            process.stdout.close()
-        if process.wait() != 0:
-            raise RuntimeError("Could not stage the pinned LAS archive")
+        if not (source / ".git").exists():
+            archive_sources.extract(archive_sources.verified(pinned), temporary)
+        else:
+            process = subprocess.Popen(["git", "-C", str(source), "archive", "--format=tar", pinned["commit"]],
+                                       stdout=subprocess.PIPE)
+            try:
+                with tarfile.open(fileobj=process.stdout, mode="r|") as archive:
+                    archive.extractall(temporary, filter="data")
+            finally:
+                process.stdout.close()
+            if process.wait() != 0:
+                raise RuntimeError("Could not stage the pinned LAS archive")
         for path in overlays:
             target = temporary / "runtime" / path.relative_to(PORT / "runtime")
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -124,6 +128,8 @@ def dependencies(sdk, native_blocks=False):
     tag = sdl.parent.parent.parent.name
     cached = LAS / "build/android/cxx/RelWithDebInfo" / tag / "arm64-v8a/_deps"
     include = cached / "adrenotools-src/include"
+    if not (LAS / '.git').exists():
+        include = LAS / 'build/android/archive-adrenotools/include'
     adreno = cached / "adrenotools-build/libadrenotools.a"
     namespace = cached / "adrenotools-build/lib/linkernsbypass/liblinkernsbypass.a"
     shaderc = deps / "lib/libshaderc_combined.a"

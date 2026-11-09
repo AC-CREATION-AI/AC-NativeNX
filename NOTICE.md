@@ -7,7 +7,10 @@ copyright line, SPDX header and license text inherited from Raitchi, Eden, yuzu
 and the other projects below is kept unchanged. AC-Création changes (branding,
 application ID `com.accreation.nativenx`, build and release workflows) are also
 GPL-3.0-or-later. Each published APK is accompanied by its corresponding source
-archive (`AC-NativeNX-<version>-source.tar.gz`).
+archive (`AC-NativeNX-<version>-source.tar.gz`): this repository at the built commit
+plus the unmodified upstream archive of every input pinned in [deps.lock](deps.lock)
+(LAS, Let's Go, Echoes, Eden, SDL3, FFmpeg, shaderc and its Khronos dependencies,
+Vulkan headers, volk, VMA, AdrenoTools, LinkerNSBypass, Capstone).
 
 Raitchi (and therefore AC-NativeNX) combines a shared native runtime with an Eden-derived Android shell.
 The default engine includes GPL-3.0-or-later components; it also retains MIT and
@@ -35,8 +38,12 @@ The Android engine build uses SDL3, FFmpeg, shaderc and its dependencies, Vulkan
 headers, volk, VulkanMemoryAllocator, Capstone, AdrenoTools and LinkerNSBypass.
 The runtime UI also retains its upstream Dear ImGui integration. Their source
 notices and dependency build records apply; the engine's GPL text does not
-replace those licenses. Exact dependency versions, archive identities and build
-options come from the build manifests used for the artifact.
+replace those licenses. Exact dependency versions, licences and archive SHA-256
+are pinned in [deps.lock](deps.lock) and checked against the build scripts by
+`tools/deps.py check`; build options come from the build manifests used for the
+artifact. The packages of `shell/cpmfile.json` (Eden's C++ dependencies, including
+the prebuilt `"ci": true` ones) are not built: the Android app compiles no shell
+native code and carries only the engine's native libraries.
 
 [The asset packager](engine/tools/package_shared_android.py) copies LAS, Let's Go,
 Echoes, Ryujinx, Fredoka and button-glyph notices, plus the Baloo2 and DejaVu notices

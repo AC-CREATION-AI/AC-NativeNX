@@ -349,8 +349,8 @@
     },
     {
       "file": "engine/docs/progress.md",
-      "sha256": "ddb412384774313fd3af8dbeba4a3ec7c6edc907700d15f50ee8c2c18abef14d",
-      "bytes": 28873
+      "sha256": "2b3a74d258996c5302bb6586357345c3edfef2116facdd523bb728bcf64f155c",
+      "bytes": 29588
     },
     {
       "file": "engine/docs/raitchi-continuous-nce.md",
@@ -1729,7 +1729,7 @@
     },
     {
       "file": "engine/shell.lock.json",
-      "sha256": "eb0d906f72eec5b527a0ac7cc100f606f473f82e2760c517e4d7e2ff2c698133",
+      "sha256": "d63c397a08ebbc50d621786b2698abb0f31f9cb2e1392a306e3d776ddf3ffb5a",
       "bytes": 770
     },
     {
@@ -2593,6 +2593,11 @@
       "bytes": 2399
     },
     {
+      "file": "engine/tools/archive_sources.py",
+      "sha256": "d3a3f977404b36962b29ba16f83e481648431b3bb02911372525a5d2e7c16454",
+      "bytes": 1756
+    },
+    {
       "file": "engine/tools/audit_game_inputs.py",
       "sha256": "fc74d2728658e7853ffd63d95ba9cd195cd1d03ef22cf44f3093e81ef499b34d",
       "bytes": 12082
@@ -2619,13 +2624,13 @@
     },
     {
       "file": "engine/tools/build_eden_shell.py",
-      "sha256": "c490ed55e202c0f924eb342f11599a97d137fe3e36ab63671d9c707ff424da5e",
-      "bytes": 15563
+      "sha256": "de19c3a78847dc3e210db12cb0b0470f6702f19e5c28240b9d3eb75471784638",
+      "bytes": 18512
     },
     {
       "file": "engine/tools/build_las_baseline.py",
-      "sha256": "1e398fdf77042e7686126ccb6772ec281c623df31291251b2875b899e0e5d4e1",
-      "bytes": 4986
+      "sha256": "b37bd4a8702c6c53ddec250f08ae5d6b12259422cc7e6d0a5c3d937b9f8fd1be",
+      "bytes": 8086
     },
     {
       "file": "engine/tools/build_letsgo_android.py",
@@ -2654,8 +2659,8 @@
     },
     {
       "file": "engine/tools/build_shared_android.py",
-      "sha256": "2eb4807eebe26ea65f4229638db2fc3efb196e2fc6ed2c432af390d90d2b370c",
-      "bytes": 20111
+      "sha256": "9864a4108c5ceaff154f47132866cda6383101e6d4981bc3f09711e75abbc4be",
+      "bytes": 20363
     },
     {
       "file": "engine/tools/build_shared_gamelib.py",
@@ -3474,8 +3479,8 @@
     },
     {
       "file": "engine/tools/package_shared_android.py",
-      "sha256": "01522e09beb3802d949c0e5e498314f7817e3821b403b69a836b6ee27ffda3bc",
-      "bytes": 30893
+      "sha256": "76016607d40656ba1b80566c6c4199f2a52c2e57a00c7c054c0660a4e045b790",
+      "bytes": 30867
     },
     {
       "file": "engine/tools/prepare_native_game.py",
@@ -3484,8 +3489,8 @@
     },
     {
       "file": "engine/tools/prepare_shared_ondevice.py",
-      "sha256": "2fed1a56345b37d8b93083adfd544c52969624e5b43a90faaf4e6142966c85d0",
-      "bytes": 22050
+      "sha256": "e8937322ed11611baee1a527b4d9ae5615f42ce788e07055ade9394cebccb8f7",
+      "bytes": 21834
     },
     {
       "file": "engine/tools/probe_shared_aot_codegen.py",
@@ -3499,8 +3504,8 @@
     },
     {
       "file": "engine/tools/restore_shell_overlay.py",
-      "sha256": "46e0f287ec3d2c3626abcc2110fa014e6717e754edcc81dbdea6e341efd362b3",
-      "bytes": 2983
+      "sha256": "68e2e5da32c704ebfb19207290537d4319d587e338dd6c30549a03ab3c512039",
+      "bytes": 3858
     },
     {
       "file": "engine/tools/run_host_checks.py",
@@ -3564,8 +3569,8 @@
     },
     {
       "file": "engine/tools/verify_sources.py",
-      "sha256": "940353475d09cb2d6dbd2f4a9e3bac8c7160df632e3f843e22509de04b3f41e2",
-      "bytes": 1653
+      "sha256": "7ce841938f519516a6ac0bd8c12b44f67184f248d3902dbd3be1953101c033ef",
+      "bytes": 4657
     },
     {
       "file": "shell/.ci/actool.sh",
@@ -7094,8 +7099,8 @@
     },
     {
       "file": "shell/src/android/app/build.gradle.kts",
-      "sha256": "2382ccc6e0c40fb65920289e09714a18f44a6165eddcb22f1ff5d30b00aada44",
-      "bytes": 3892
+      "sha256": "d90d1682a262a8455f47fcb7c3684d9756c1fe545e50011ef1600c73026a2954",
+      "bytes": 4055
     },
     {
       "file": "shell/src/android/app/proguard-rules.pro",
@@ -25813,5 +25818,5 @@
       "bytes": 12464
     }
   ],
-  "overlay_manifest_sha256": "0c9d2e2b94d55e0cf90a6149ad3d78dfdc9e46ea8fb22488a5e30b071a3a52de"
+  "overlay_manifest_sha256": "60f494ddc6be7bb6946cd062be4188054f24cf6c4d7ca5d6e0d5389b22eba9ee"
 }
