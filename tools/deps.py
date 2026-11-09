@@ -239,7 +239,7 @@ def source_tarball(args):
                "no `.git`. The later stages (`prepare_shared_ondevice.py`, `build_shared_android.py`,",
                "`restore_shell_overlay.py`, `build_eden_shell.py`) still read Git checkouts of the same commits,",
                "made by `engine/tools/fetch_sources.py` (into empty source paths) and `restore_shell_overlay.py`.", ""]
-    git =subprocess.run(["git", "-C", str(ROOT), "archive", "--format=tar", f"--prefix={top}/", "HEAD"],
+    git = subprocess.run(["git", "-C", str(ROOT), "archive", "--format=tar", f"--prefix={top}/", "HEAD"],
                          check=True, capture_output=True).stdout
     mtime = int(subprocess.run(["git", "-C", str(ROOT), "log", "-1", "--format=%ct"], check=True,
                                capture_output=True, text=True).stdout.strip())
