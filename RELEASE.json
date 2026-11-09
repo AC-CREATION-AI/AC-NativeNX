@@ -12,6 +12,6 @@
   },
   "default_cpu": "continuous-nce",
   "release_apk_sha256": null,
-  "source_manifest_sha256": "8cb8cc7dbc66a8e29411cec4f1acdba76cca6da36618b7e28d2f8259a31f5bc6",
+  "source_manifest_sha256": "5c2d99ed0cebc0057029291260a7efd5b250662debff1ffb2d440bb4a599a5d3",
   "scope": "Experimental Android ARM64 preview. First AC-Création real-device test (Galaxy Z Fold4 SM-F936B, Android 16, build 0.1.0): the app installs and starts, but no game starts: the native memory reservation at 0x7000000000 fails with errno 17 (issue #6); a fix is in progress. No public release before a game starts on a real device. See TESTING.md (upstream Raitchi 0.0.2 observations) for bounded compatibility."
 }
