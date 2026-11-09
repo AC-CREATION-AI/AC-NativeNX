@@ -49,7 +49,9 @@ public final class SharedLauncherActivity extends Activity {
     private void note(String value){operationMessage=value;if(message!=null)message.setText(value);}
     private Context dialogContext(){return new ContextThemeWrapper(this,colors.dark?android.R.style.Theme_Material_Dialog_Alert:android.R.style.Theme_Material_Light_Dialog_Alert);}
     @Override public void onCreate(Bundle state){
-        super.onCreate(state);colors=RaitchiUi.palette(this);
+        super.onCreate(state);
+        android.util.Log.i("lasrecomp", "APP_OPEN");
+        colors=RaitchiUi.palette(this);
         getWindow().setStatusBarColor(colors.background);getWindow().setNavigationBarColor(colors.background);
         getWindow().getDecorView().setSystemUiVisibility(colors.dark?0:View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
         if(getActionBar()!=null)getActionBar().hide();

@@ -567,7 +567,10 @@ static void create_device_compat(const char **ext, uint32_t n_ext, void *ext_fea
     VkDeviceCreateInfo di = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, .pNext = &f, .queueCreateInfoCount = 1,
                              .pQueueCreateInfos = &qi, .enabledExtensionCount = n_ext, .ppEnabledExtensionNames = ext};
     LOG("[vk] Vulkan %u.%u device with %u extensions for 1.3\n", VK_API_VERSION_MAJOR(g_vk.api), VK_API_VERSION_MINOR(g_vk.api), n_ext);
-    VK_CHECK(vkCreateDevice(g_vk.phys, &di, NULL, &g_vk.dev));
+    VkResult device_result = vkCreateDevice(g_vk.phys, &di, NULL, &g_vk.dev);
+    if (device_result != VK_SUCCESS) LOG("VK_DEVICE_FAIL(%s) result=%d\n", g_vk.props.deviceName, device_result);
+    VK_CHECK(device_result);
+    LOG("VK_DEVICE_OK(%s)\n", g_vk.props.deviceName);
     device_created();
 }
 #endif
@@ -885,7 +888,10 @@ static void create_device(void) {
                                   .queueCount = 1, .pQueuePriorities = &prio};
     VkDeviceCreateInfo di = {.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO, .pNext = &f, .queueCreateInfoCount = 1,
                              .pQueueCreateInfos = &qi, .enabledExtensionCount = n_ext, .ppEnabledExtensionNames = ext};
-    VK_CHECK(vkCreateDevice(g_vk.phys, &di, NULL, &g_vk.dev));
+    VkResult device_result = vkCreateDevice(g_vk.phys, &di, NULL, &g_vk.dev);
+    if (device_result != VK_SUCCESS) LOG("VK_DEVICE_FAIL(%s) result=%d\n", g_vk.props.deviceName, device_result);
+    VK_CHECK(device_result);
+    LOG("VK_DEVICE_OK(%s)\n", g_vk.props.deviceName);
     device_created();
 }
 
@@ -1882,6 +1888,8 @@ void backend_present_now(NvnTexture *t, uint64_t frame) {
 // The game thread's side of a present: the frame counters and the per-frame hooks (input, pacing, test hooks).
 static void present_hooks(void) {
     total_frames++;
+    // First guest present handed to the renderer; not proof of display completion.
+    if (total_frames == 1) LOG("GAME_FIRST_FRAME\n");
     g_frame_counter++;
     if (total_frames % 120 == 1) plat_thread_core(PLAT_CORE_MAIN);  // (again now and then: Android resets it when the
                                                                     // app's cpuset changes, e.g. on reaching the foreground)

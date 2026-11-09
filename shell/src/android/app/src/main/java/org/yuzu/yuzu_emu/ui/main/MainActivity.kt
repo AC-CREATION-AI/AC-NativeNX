@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
         ThemeHelper.ThemeChangeListener(this)
         ThemeHelper.setTheme(this)
         super.onCreate(savedInstanceState)
+        android.util.Log.i("lasrecomp", "APP_OPEN")
 
         binding = ActivityMainBinding.inflate(layoutInflater)
 

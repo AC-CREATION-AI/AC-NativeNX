@@ -11,7 +11,7 @@
   "role": "Exact upstream base plus hashed uncommitted Android source overlay; not a published Raitchi integration commit. Restore through the supplied overlay manifest.",
   "source_overlay": {
     "manifest": "../shell-overlay.json",
-    "sha256": "0c9d2e2b94d55e0cf90a6149ad3d78dfdc9e46ea8fb22488a5e30b071a3a52de",
+    "sha256": "5f988eea7cd664725f9eb505b7717977ff9fe4ca55c7cb31be3db7fb48b23d32",
     "scope": "uncommitted source snapshot",
     "integration_commit": null,
     "maintained_fork_integration_required": true

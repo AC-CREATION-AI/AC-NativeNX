@@ -4,6 +4,9 @@
 These checks compile synthetic tests with the host compiler and need no Android
 NDK, device, game files, keys or network. Each check writes only below build/.
 Checks whose tools are missing are reported as skipped, never as passed.
+Prepare public sources first, from engine/: python3 tools/fetch_sources.py
+then python3 tools/build_shared_android.py (staging only, no NDK required).
+Missing prepared source inputs are a usage error (exit 2), before any checks.
 """
 
 import argparse
@@ -16,6 +19,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 FONT = "ports/shared-android/assets/fonts/shared_5.ttf"
+# Representative upstream/staged inputs, not an integrity or completeness check.
+PREPARED_SOURCE_INPUTS = (
+    "sources/las-android/runtime/nvn/shader_prep.h",
+    "sources/las-android/runtime/ipc.h",
+    "work/shared-android/third_party/imgui/imgui.cpp",
+)
 # (command, required executables). Default invocations only: no --android,
 # --capture or --original* flags, which need private inputs or an NDK build.
 CHECKS = [
@@ -125,6 +134,13 @@ def main():
                     help="run the checks that need a completed native Android build instead")
     ap.add_argument("--report", type=Path, default=ROOT / "build" / "host-checks.json")
     args = ap.parse_args()
+    missing_sources = [p for p in PREPARED_SOURCE_INPUTS if not (ROOT / p).is_file()]
+    if missing_sources:
+        ap.error("prepared public sources missing: " + ", ".join(missing_sources)
+                 + ". From engine/, run `python3 tools/fetch_sources.py` then "
+                 "`python3 tools/build_shared_android.py` (staging only; no NDK build). "
+                 "For --android, also complete `python3 tools/build_shared_android.py --build` "
+                 "with its documented Android dependencies. No sources are fetched automatically.")
     results = []
     checks = [([c, *(["--android"] if c in ANDROID_COMPILE_FLAGS else [])], ["clang"])
               for c in ANDROID_CHECKS + ["tools/check_material_probe.py"]] \
